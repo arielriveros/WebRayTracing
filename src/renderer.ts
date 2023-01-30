@@ -29,6 +29,8 @@ export class Render
     private _rgbBuffer: Uint8ClampedArray;
     private _image!: ImageData;
     private _stats: Stats;
+    private _update: boolean = false;
+    private _counter: number = 0;
     
     constructor(canvasId: string)
     {
@@ -51,20 +53,22 @@ export class Render
         document.body.appendChild( this._stats.dom );
     }
 
-    public start(): void
+    public start(update: boolean = false): void
     {
-        this.loop();
+        this._update = update;
+        this.render();
     }
 
-    private render(lightDir: vec3): void
+    private sample(backgroundColor: vec4, ambientLight: number, lightDir: vec3): void
     {
         for(let y = 0; y < this._height; y++)
             for(let x = 0; x < this._width; x++)
             {
                 let coord: vec2 = [x/this._width, y/this._height];
-                coord = vec2.scale(coord, coord, 2.0)
-                coord = vec2.add(coord, coord, [-1.0, -1.0]);
-                let color: vec4 = this.perPixel(coord, lightDir);
+                coord[0] = coord[0] * 2.0 - 1.0;
+                coord[1] = coord[1] * 2.0 - 1.0;
+                
+                let color: vec4 = this.perPixel(coord, backgroundColor, ambientLight, lightDir);
                 let index = (x + y * this._width) * 4;
                 this._rgbBuffer[index]     = color[0] * 255;
                 this._rgbBuffer[index + 1] = color[1] * 255;
@@ -73,15 +77,21 @@ export class Render
             }
     }
 
-    private loop(): void {
+    private render(): void {
         this._stats.begin();
+        this._counter++;
+        let backgroundColor: vec4 = COLORS.BLACK;
+        let ambientLight: number = 0.05;
 
-        let lightDir: vec3 = vec3.normalize(vec3.create(), [-1, -1, -1]);
-        this.render(lightDir);
+        let lx: number = Math.cos(this._counter);
+        let lyz: number = -Math.sin(this._counter);
+        let lightDir: vec3 = vec3.normalize(vec3.create(), [lx, lyz, lyz]);
+        this.sample(backgroundColor, ambientLight, lightDir);
         this.uploadBuffer();
 
         this._stats.end();
-        requestAnimationFrame(this.loop.bind( this ));
+        if(this._update)
+            requestAnimationFrame(this.render.bind( this ));
     }
 
     private uploadBuffer(): void
@@ -95,11 +105,11 @@ export class Render
     }
 
     /**
-     * Emulates a per pixel shader. 
+     * Emulates a pixel shader. 
      * @param coord Coordinate of the pixel in the screen.
      * @returns Returns a color for each pixel.
      */
-    private perPixel(coord: vec2, lightDir: vec3): vec4
+    private perPixel(coord: vec2, backgroundColor: vec4, ambientLight: number, lightDir: vec3): vec4
     {
         let rayOrigin: vec3 = [0, 0, 1.0];
         let rayDirection: vec3 = [coord[0], coord[1], -1.0];
@@ -112,13 +122,14 @@ export class Render
         let d: number = b * b - 4.0 * a * c;
 
         if(d < 0.0)
-            return COLORS.GRAY;
+            return backgroundColor;
        
         let t: number = (-b - Math.sqrt(d)) / (2.0 * a);
         let hit: vec3 = vec3.scaleAndAdd(vec3.create(), rayOrigin, rayDirection, t);
+
         let normal: vec3 = vec3.normalize(vec3.create(), hit);
 
-        let diffuse: number = Math.max(0.0, vec3.dot(normal, vec3.negate(vec3.create(), lightDir)));
+        let diffuse: number = Math.max(ambientLight, vec3.dot(normal, vec3.negate(vec3.create(), lightDir)));
 
         let sphereColor = vec4.create(); 
         vec4.copy(sphereColor, COLORS.PURPLE);

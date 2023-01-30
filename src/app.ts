@@ -4,7 +4,7 @@ let renderer = new Render("raytracer-canvas");
 
 // main application the browser runs
 window.onload = () => {
-    renderer.start();
+    renderer.start(true);
 }
 
 window.onresize = () => {
