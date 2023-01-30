@@ -1,3 +1,6 @@
+import Stats from "stats.js";
+
+
 export class Render
 {
     private _renderTarget: HTMLCanvasElement;
@@ -6,6 +9,7 @@ export class Render
     private _width: number;
     private _rgbBuffer: Uint8ClampedArray;
     private _imageBuffer!: ImageData;
+    private _stats: Stats;
 
     constructor(canvasId: string)
     {
@@ -21,6 +25,10 @@ export class Render
         this._width = this._renderTarget.width;
 
         this._rgbBuffer = new Uint8ClampedArray(this._width * this._height * 4);
+
+        this._stats = new Stats();
+        this._stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+        document.body.appendChild( this._stats.dom );
     }
 
     public start(): void
@@ -30,6 +38,7 @@ export class Render
 
     public render(): void
     {
+        //this._stats.begin();
         for(let i = 0; i < this._rgbBuffer.length; i += 4)
         {
             this._rgbBuffer[i] = Math.random() * 255;   // RED
@@ -37,12 +46,16 @@ export class Render
             this._rgbBuffer[i+2] = Math.random() * 255; // BLUE
             this._rgbBuffer[i+3] = 255;                 // ALPHA
         }
-
-        this.uploadBuffer();
+        
+        
+        
     }
 
     private loop(): void {
+        this._stats.begin();
         this.render();
+        this.uploadBuffer();
+        this._stats.end();
         requestAnimationFrame(this.loop.bind( this ));
     }
 
