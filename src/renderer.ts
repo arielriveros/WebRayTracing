@@ -1,5 +1,13 @@
 import Stats from "stats.js";
 
+interface Color
+{
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+}
+
 
 export class Render
 {
@@ -8,9 +16,9 @@ export class Render
     private _height: number;
     private _width: number;
     private _rgbBuffer: Uint8ClampedArray;
-    private _imageBuffer!: ImageData;
+    private _image!: ImageData;
     private _stats: Stats;
-
+    
     constructor(canvasId: string)
     {
         if(document.getElementById(canvasId) as HTMLCanvasElement == null)
@@ -24,6 +32,7 @@ export class Render
         this._height = this._renderTarget.height;
         this._width = this._renderTarget.width;
 
+        // Array containing color data for each pixel [r_0, g_0, b_0, a_0, r_1, g_1, ... , a_width*height*4-1]
         this._rgbBuffer = new Uint8ClampedArray(this._width * this._height * 4);
 
         this._stats = new Stats();
@@ -36,25 +45,27 @@ export class Render
         this.loop();
     }
 
-    public render(): void
+    private render(): void
     {
-        //this._stats.begin();
-        for(let i = 0; i < this._rgbBuffer.length; i += 4)
-        {
-            this._rgbBuffer[i] = Math.random() * 255;   // RED
-            this._rgbBuffer[i+1] = Math.random() * 255; // GREEN
-            this._rgbBuffer[i+2] = Math.random() * 255; // BLUE
-            this._rgbBuffer[i+3] = 255;                 // ALPHA
-        }
-        
-        
-        
+        for(let y = 0; y < this._height; y++)
+            for(let x = 0; x < this._width; x++)
+            {
+                let coord = {x: x/this._width, y: y/this._height};
+                let color: Color = this.perPixel(coord);
+                let index = (x + y * this._width) * 4;
+                this._rgbBuffer[index]     = color.r;
+                this._rgbBuffer[index + 1] = color.g;
+                this._rgbBuffer[index + 2] = color.b;
+                this._rgbBuffer[index + 3] = color.a;
+            }
     }
 
     private loop(): void {
         this._stats.begin();
+
         this.render();
         this.uploadBuffer();
+
         this._stats.end();
         requestAnimationFrame(this.loop.bind( this ));
     }
@@ -62,11 +73,27 @@ export class Render
     private uploadBuffer(): void
     {
         // Creates empty image data of the size of the canvas
-        this._imageBuffer = this._renderContext.createImageData(this._width, this._height);
+        this._image = this._renderContext.createImageData(this._width, this._height);
         // Copies the data from the rgb buffer to the image buffer
-        this._imageBuffer.data.set(this._rgbBuffer);
+        this._image.data.set(this._rgbBuffer);
         // Puts the image data on the canvas
-        this._renderContext.putImageData(this._imageBuffer, 0, 0);
+        this._renderContext.putImageData(this._image, 0, 0);
+    }
+
+    /**
+     * Emulates a per pixel shader. 
+     * @param coord Coordinate of the pixel in the screen.
+     * @returns Returns a random color for each pixel.
+     */
+    private perPixel(coord: {x: number, y: number}): Color
+    {
+        let color: Color = {
+            r: coord.x * 255, 
+            g: coord.y * 255, 
+            b: 0, 
+            a: 255
+        };
+        return color;        
     }
 
 }
