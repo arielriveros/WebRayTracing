@@ -1,13 +1,24 @@
 import Stats from "stats.js";
+import {vec2, vec3, vec4} from "gl-matrix";
 
-interface Color
+namespace COLORS
 {
-    r: number;
-    g: number;
-    b: number;
-    a: number;
+    export const RED: vec4 = [1, 0, 0, 1] as vec4;
+    export const GREEN: vec4 = [0, 1, 0, 1] as vec4;
+    export const BLUE: vec4 = [0, 0, 1, 1] as vec4;
+    export const WHITE: vec4 = [1, 1, 1, 1] as vec4;
+    export const BLACK: vec4 = [0, 0, 0, 1] as vec4;
+    export const YELLOW: vec4 = [1, 1, 0, 1] as vec4;
+    export const CYAN: vec4 = [0, 1, 1, 1] as vec4;
+    export const MAGENTA: vec4 = [1, 0, 1, 1] as vec4;
+    export const GRAY: vec4 = [0.5, 0.5, 0.5, 1] as vec4;
+    export const LIGHT_GRAY: vec4 = [0.75, 0.75, 0.75, 1] as vec4;
+    export const DARK_GRAY: vec4 = [0.25, 0.25, 0.25, 1] as vec4;
+    export const ORANGE: vec4 = [1, 0.5, 0, 1] as vec4;
+    export const PURPLE: vec4 = [0.5, 0, 1, 1] as vec4;
+    export const BROWN: vec4 = [0.5, 0.25, 0, 1] as vec4;
+    export const PINK: vec4 = [1, 0.75, 0.8, 1] as vec4;    
 }
-
 
 export class Render
 {
@@ -45,25 +56,28 @@ export class Render
         this.loop();
     }
 
-    private render(): void
+    private render(lightDir: vec3): void
     {
         for(let y = 0; y < this._height; y++)
             for(let x = 0; x < this._width; x++)
             {
-                let coord = {x: x/this._width, y: y/this._height};
-                let color: Color = this.perPixel(coord);
+                let coord: vec2 = [x/this._width, y/this._height];
+                coord = vec2.scale(coord, coord, 2.0)
+                coord = vec2.add(coord, coord, [-1.0, -1.0]);
+                let color: vec4 = this.perPixel(coord, lightDir);
                 let index = (x + y * this._width) * 4;
-                this._rgbBuffer[index]     = color.r;
-                this._rgbBuffer[index + 1] = color.g;
-                this._rgbBuffer[index + 2] = color.b;
-                this._rgbBuffer[index + 3] = color.a;
+                this._rgbBuffer[index]     = color[0] * 255;
+                this._rgbBuffer[index + 1] = color[1] * 255;
+                this._rgbBuffer[index + 2] = color[2] * 255;
+                this._rgbBuffer[index + 3] = color[3] * 255;
             }
     }
 
     private loop(): void {
         this._stats.begin();
 
-        this.render();
+        let lightDir: vec3 = vec3.normalize(vec3.create(), [-1, -1, -1]);
+        this.render(lightDir);
         this.uploadBuffer();
 
         this._stats.end();
@@ -83,17 +97,36 @@ export class Render
     /**
      * Emulates a per pixel shader. 
      * @param coord Coordinate of the pixel in the screen.
-     * @returns Returns a random color for each pixel.
+     * @returns Returns a color for each pixel.
      */
-    private perPixel(coord: {x: number, y: number}): Color
+    private perPixel(coord: vec2, lightDir: vec3): vec4
     {
-        let color: Color = {
-            r: coord.x * 255, 
-            g: coord.y * 255, 
-            b: 0, 
-            a: 255
-        };
-        return color;        
+        let rayOrigin: vec3 = [0, 0, 1.0];
+        let rayDirection: vec3 = [coord[0], coord[1], -1.0];
+
+        let radius: number = 0.5;
+
+        let a: number = vec3.dot(rayDirection, rayDirection);
+        let b: number = 2.0 * vec3.dot(rayOrigin, rayDirection);
+        let c: number = vec3.dot(rayOrigin, rayOrigin) - radius * radius;
+        let d: number = b * b - 4.0 * a * c;
+
+        if(d < 0.0)
+            return COLORS.GRAY;
+       
+        let t: number = (-b - Math.sqrt(d)) / (2.0 * a);
+        let hit: vec3 = vec3.scaleAndAdd(vec3.create(), rayOrigin, rayDirection, t);
+        let normal: vec3 = vec3.normalize(vec3.create(), hit);
+
+        let diffuse: number = Math.max(0.0, vec3.dot(normal, vec3.negate(vec3.create(), lightDir)));
+
+        let sphereColor = vec4.create(); 
+        vec4.copy(sphereColor, COLORS.PURPLE);
+        sphereColor[0] *= diffuse;
+        sphereColor[1] *= diffuse;
+        sphereColor[2] *= diffuse;
+        
+        return sphereColor;        
     }
 
 }
