@@ -4,7 +4,6 @@ import { COLORS } from "./utils";
 
 interface SceneParameters
 {
-    sphere: Sphere;
     lightDir?: vec3;
     ambientLight?: number;
     backgroundColor?: vec4;
@@ -12,20 +11,20 @@ interface SceneParameters
 
 export class Scene
 {
-    private _sphere: Sphere;
+    private _spheres: Array<Sphere>;
     private _lightDir: vec3;
     private _ambientLight: number;
     private _backgroundColor: vec4;
 
-    constructor({sphere, lightDir = vec3.fromValues(0, 1, 0), ambientLight = 0.1, backgroundColor = COLORS.BLACK}: SceneParameters)
+    constructor({lightDir = vec3.fromValues(0, 1, 0), ambientLight = 0.1, backgroundColor = COLORS.BLACK}: SceneParameters)
     {
-        this._sphere = sphere;
+        this._spheres = [];
         this._lightDir = lightDir;
         this._ambientLight = ambientLight;
         this._backgroundColor = backgroundColor;
     }
 
-    public get sphere(): Sphere { return this._sphere; }
+    public get spheres(): Array<Sphere> { return this._spheres; }
 
     public get lightDir(): vec3 { return this._lightDir; }
     public set lightDir(value: vec3) { this._lightDir = value; }
@@ -35,4 +34,9 @@ export class Scene
 
     public get backgroundColor(): vec4 { return this._backgroundColor; }
     public set backgroundColor(value: vec4) { this._backgroundColor = value; }
+
+    public addSphere(sphere: Sphere): void
+    {
+        this._spheres.push(sphere);
+    }
 }

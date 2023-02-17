@@ -71,15 +71,18 @@ export class Render
     public start(): void
     {
         this._camera = new Camera({height: this._height, width: this._width});
-        this._scene = new Scene({sphere: new Sphere(0.5, COLORS.RED)});
+        this._scene = new Scene({});
+        this._scene.addSphere(new Sphere({position: vec3.fromValues(0, 0, 0)}));
+        this._scene.addSphere(new Sphere({position: vec3.fromValues(0.2, 1, -1), radius: 0.5, color: COLORS.RED}));
+        this._scene.addSphere(new Sphere({position: vec3.fromValues(-0.5, -0.5, 0.5), radius: 0.3, color: COLORS.BLUE}));
         this.update();
     }
 
     private update(): void
     {
         this._scene.lightDir = vec3.normalize(vec3.create(), this._settings.lightDir);
-        this._scene.sphere.radius = this._settings.sphereRadius;
-        this._scene.sphere.color =  this._settings.sphereColor;
+        this._scene.spheres[0].radius = this._settings.sphereRadius;
+        this._scene.spheres[0].color =  this._settings.sphereColor;
         
         this.render(this._camera, this._scene);
         requestAnimationFrame(this.update.bind( this ));
@@ -127,25 +130,46 @@ export class Render
 
     private traceRay(ray: Ray, scene: Scene): vec4
     {
-
-        let radius: number = scene.sphere.radius;
-        let a: number = vec3.dot(ray.direction, ray.direction);
-        let b: number = 2.0 * vec3.dot(ray.origin, ray.direction);
-        let c: number = vec3.dot(ray.origin, ray.origin) - radius * radius;
-        let d: number = b * b - 4.0 * a * c;
-
-        if(d < 0.0)
+        if(scene.spheres.length == 0)
             return scene.backgroundColor;
-       
-        let t: number = (-b - Math.sqrt(d)) / (2.0 * a);
-        let hit: vec3 = vec3.scaleAndAdd(vec3.create(), ray.origin, ray.direction, t);
+
+        
+        let closestSphere: Sphere | null = null;
+        let hitDistance: number = Number.MAX_VALUE;
+        for(let sphere of scene.spheres)
+        {
+            let origin: vec3 = vec3.create();
+            vec3.add(origin, ray.origin, sphere.position);
+
+            let a: number = vec3.dot(ray.direction, ray.direction);
+            let b: number = 2.0 * vec3.dot(origin, ray.direction);
+            let c: number = vec3.dot(origin, origin) - sphere.radius * sphere.radius;
+            let d: number = b * b - 4.0 * a * c;
+    
+            if(d < 0.0)
+                continue;
+           
+            let t: number = (-b - Math.sqrt(d)) / (2.0 * a);
+            if(t < hitDistance)
+            {
+                hitDistance = t;
+                closestSphere = sphere;
+            }
+        }
+
+        if(closestSphere == null)
+            return scene.backgroundColor;
+
+        let origin: vec3 = vec3.create();
+        vec3.add(origin, ray.origin, closestSphere.position);
+        let hit: vec3 = vec3.scaleAndAdd(vec3.create(), origin, ray.direction, hitDistance);
 
         let normal: vec3 = vec3.normalize(vec3.create(), hit);
 
         let diffuse: number = Math.max(scene.ambientLight, vec3.dot(normal, vec3.negate(vec3.create(), scene.lightDir)));
 
         let sphereColor = vec4.create(); 
-        vec4.copy(sphereColor, scene.sphere.color);
+        vec4.copy(sphereColor, closestSphere.color);
         sphereColor[0] *= diffuse;
         sphereColor[1] *= diffuse;
         sphereColor[2] *= diffuse;
