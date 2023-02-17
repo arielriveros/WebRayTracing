@@ -1,10 +1,12 @@
-import { vec3 } from "gl-matrix";
+import { vec3, vec4 } from "gl-matrix";
 
 
 export class ConfigurationComponent
 {
     private _update: boolean = true;
-    private _lightDir: vec3 = vec3.fromValues(0, 0, 0);
+    private _lightDir: vec3 = vec3.fromValues(0, 0, -1);
+    private _sphereRadius: number = 0.5;
+    private _sphereColor: vec4 = vec4.fromValues(1, 1, 1, 1);
     private _root: HTMLDivElement;
     private _dom: HTMLDivElement;
     constructor()
@@ -17,7 +19,7 @@ export class ConfigurationComponent
 
         this.setUpdate();
         this.setUpDirectionalLight();
-        
+        this.setUpSphere();
 
         this._dom = this._root;
     }
@@ -46,56 +48,87 @@ export class ConfigurationComponent
         lightDirTitle.innerHTML = "Directional light";
         lightDirDiv.appendChild(lightDirTitle);
 
-        const lightDirXDiv = document.createElement("div");
-        lightDirXDiv.innerHTML = "X";
-        lightDirDiv.appendChild(lightDirXDiv);
-        const lightDirX = document.createElement("input");
-        lightDirX.type = "range";
-        lightDirX.min = "-1";
-        lightDirX.max = "1";
-        lightDirX.step = "0.1";
-        lightDirX.value = this._lightDir[0].toString();
-        lightDirX.onchange = (e) => {
-            this._lightDir[0] = parseFloat((e.target as HTMLInputElement).value);
-        };
-        lightDirXDiv.appendChild(lightDirX);
+        const lightDirXDiv = this.createLightDirSlider("X");
         lightDirDiv.appendChild(lightDirXDiv);
 
-        const lightDirYDiv = document.createElement("div");
-        lightDirYDiv.innerHTML = "Y";
-        lightDirDiv.appendChild(lightDirYDiv);
-        const lightDirY = document.createElement("input");
-        lightDirY.type = "range";
-        lightDirY.min = "-1";
-        lightDirY.max = "1";
-        lightDirY.step = "0.1";
-        lightDirY.value = this._lightDir[0].toString();
-        lightDirY.onchange = (e) => {
-            this._lightDir[1] = parseFloat((e.target as HTMLInputElement).value);
-        };
-        lightDirYDiv.appendChild(lightDirY);
+        const lightDirYDiv = this.createLightDirSlider("Y");
         lightDirDiv.appendChild(lightDirYDiv);
 
-        const lightDirZDiv = document.createElement("div");
-        lightDirZDiv.innerHTML = "Z";
-        lightDirDiv.appendChild(lightDirZDiv);
-        const lightDirZ = document.createElement("input");
-        lightDirZ.type = "range";
-        lightDirZ.min = "-1";
-        lightDirZ.max = "1";
-        lightDirZ.step = "0.1";
-        lightDirZ.defaultValue = "-1"
-        lightDirZ.value = this._lightDir[0].toString();
-        lightDirZ.onchange = (e) => {
-            this._lightDir[2] = parseFloat((e.target as HTMLInputElement).value);
-        };
-        lightDirZDiv.appendChild(lightDirZ);
+        const lightDirZDiv = this.createLightDirSlider("Z");
         lightDirDiv.appendChild(lightDirZDiv);
 
         this._root.appendChild(lightDirDiv);
     }
 
+    private createLightDirSlider(axis: 'X' | 'Y' | 'Z'): HTMLDivElement
+    {
+        const out = document.createElement("div");
+        out.innerHTML = axis;
+        const lightDir = document.createElement("input");
+        lightDir.type = "range";
+        lightDir.min = "-1";
+        lightDir.max = "1";
+        lightDir.step = "0.1";
+        
+        const index = axis === 'X' ? 0 : axis === 'Y' ? 1 : 2;
+        lightDir.value = this._lightDir[index].toString();
+        lightDir.onchange = (e) => {
+            this._lightDir[index] = parseFloat((e.target as HTMLInputElement).value);
+        };
+        out.appendChild(lightDir);
+        return out;
+    }
+
+    private setUpSphere()
+    {
+        const sphereDiv = document.createElement("div");
+        const sphereTitle = document.createElement("h4");
+        sphereTitle.innerHTML = "Sphere Properties";
+        sphereDiv.appendChild(sphereTitle);
+
+        const sphereRadius = document.createElement("input");
+        const sphereRadiusLabel = document.createElement("label");
+        sphereRadiusLabel.innerHTML = "Radius";
+        sphereDiv.appendChild(sphereRadiusLabel);
+
+        sphereRadius.type = "range";
+        sphereRadius.min = "0";
+        sphereRadius.max = "1";
+        sphereRadius.step = "0.05";
+        sphereRadius.defaultValue = "0.5";
+        sphereRadius.onchange = (e) => {
+            this._sphereRadius = parseFloat((e.target as HTMLInputElement).value);
+        };
+        sphereDiv.appendChild(sphereRadius);
+
+        const sphereColor = document.createElement("input");
+        const sphereColorLabel = document.createElement("label");
+        sphereColorLabel.innerHTML = "Color";
+        sphereDiv.appendChild(sphereColorLabel);
+
+        sphereColor.type = "color";
+        sphereColor.defaultValue = "#ffffff";
+        sphereColor.onchange = (e) => {
+            this._sphereColor = hexToVec4((e.target as HTMLInputElement).value);
+        };
+        sphereDiv.appendChild(sphereColor);
+
+        this._root.appendChild(sphereDiv);
+    }
+
     public get dom(): HTMLDivElement { return this._dom; }
     public get update(): boolean { return this._update; }
     public get lightDir(): vec3 { return this._lightDir; }
+    public get sphereRadius(): number { return this._sphereRadius; }
+    public get sphereColor(): vec4 { return this._sphereColor; }
+}
+
+// helper
+
+function hexToVec4(hex: string, alpha: number = 1): vec4 {
+    let r = parseInt(hex.slice(1, 3), 16);
+    let g = parseInt(hex.slice(3, 5), 16);
+    let b = parseInt(hex.slice(5, 7), 16);
+
+    return vec4.fromValues(r/255, g/255, b/255, alpha);
 }
