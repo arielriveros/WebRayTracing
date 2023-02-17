@@ -2,8 +2,6 @@ import { mat4, vec2, vec3, vec4 } from "gl-matrix";
 
 interface CameraParameters
 {
-    height: number,
-    width: number,
     position?: vec3,
     fov?: number,
     near?: number,
@@ -12,8 +10,8 @@ interface CameraParameters
 
 export class Camera
 {
-    private _height: number;
-    private _width: number;
+    private _height!: number;
+    private _width!: number;
     private _position: vec3;
     private _fov: number;
     private _near: number;
@@ -27,18 +25,14 @@ export class Camera
 
     private _rayDirections!: vec3[];
 
-    constructor({height, width, position = vec3.fromValues(0, 0, -2), fov = 45, near = 0.1, far = 100}: CameraParameters)
+    constructor({position = vec3.fromValues(0, 0, -2), fov = 45, near = 0.1, far = 100}: CameraParameters)
     {
-        this._height = height;
-        this._width = width;
         this._position = position;
         this._fov = fov;
         this._near = near;
         this._far = far;
         this._forward = vec3.fromValues(0, 0, 1)
         this._rayDirections = [];
-
-        this.update();
     }
 
     public update(): void
@@ -84,4 +78,14 @@ export class Camera
 
     public get rayDirections(): vec3[] { return this._rayDirections; }
     public get position(): vec3 { return this._position; }
+
+    public get height(): number { return this._height; }
+    public get width(): number { return this._width; }
+
+    public setHeightAndWidth(height: number, width: number): void
+    {
+        this._height = height;
+        this._width = width;
+        this.update();
+    }
 }

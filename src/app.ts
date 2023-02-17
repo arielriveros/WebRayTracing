@@ -1,10 +1,10 @@
-import { Render } from "./renderer";
+import { Application } from "./application";
 
-let renderer = new Render("raytracer-canvas");
+let application = new Application();
 
 // main application the browser runs
 window.onload = () => {
-    renderer.start();
+    application.start();
 }
 
 window.onresize = () => {
