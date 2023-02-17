@@ -4,7 +4,7 @@ import { hexToVec4 } from "./utils";
 export class ConfigurationComponent
 {
     private _update: boolean = true;
-    private _lightDir: vec3 = vec3.fromValues(0, 0, -1);
+    private _lightDir: vec3 = vec3.fromValues(0, 0, 1);
     private _sphereRadius: number = 0.5;
     private _sphereColor: vec4 = vec4.fromValues(1, 1, 1, 1);
     private _root: HTMLDivElement;
