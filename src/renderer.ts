@@ -44,6 +44,28 @@ export class Render
 
         document.body.appendChild( this._stats.dom );
         document.body.appendChild( this._settings.dom );
+
+        
+        this._renderTarget.addEventListener( "contextmenu", (e) => {
+            e.preventDefault();
+        });
+
+        // Move position on mouse move and clicking
+        this._renderTarget.addEventListener("mousemove", (e) => {
+            if(!this._camera) return;
+            if(e.buttons === 1)
+            {
+                this._camera.position[0] = e.clientX / this._width * 2 - 1;
+                this._camera.position[1] = -e.clientY / this._height * 2 + 1;
+            }
+        });     
+        
+        // Zoom on mouse wheel
+        this._renderTarget.addEventListener("wheel", (e) => {
+            if(!this._camera) return;
+            this._camera!.position[2] -= e.deltaY / 1000;
+        });
+        
     }
 
     public start(): void
@@ -58,7 +80,7 @@ export class Render
         this._scene.lightDir = vec3.normalize(vec3.create(), this._settings.lightDir);
         this._scene.sphere.radius = this._settings.sphereRadius;
         this._scene.sphere.color =  this._settings.sphereColor;
-
+        
         this.render(this._camera, this._scene);
         requestAnimationFrame(this.update.bind( this ));
     }
