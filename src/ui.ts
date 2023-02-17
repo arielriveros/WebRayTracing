@@ -1,5 +1,5 @@
 import { vec3, vec4 } from "gl-matrix";
-
+import { hexToVec4 } from "./utils";
 
 export class ConfigurationComponent
 {
@@ -121,14 +121,4 @@ export class ConfigurationComponent
     public get lightDir(): vec3 { return this._lightDir; }
     public get sphereRadius(): number { return this._sphereRadius; }
     public get sphereColor(): vec4 { return this._sphereColor; }
-}
-
-// helper
-
-function hexToVec4(hex: string, alpha: number = 1): vec4 {
-    let r = parseInt(hex.slice(1, 3), 16);
-    let g = parseInt(hex.slice(3, 5), 16);
-    let b = parseInt(hex.slice(5, 7), 16);
-
-    return vec4.fromValues(r/255, g/255, b/255, alpha);
 }
