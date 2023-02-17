@@ -1,4 +1,5 @@
 import Stats from "stats.js";
+import { ConfigurationComponent } from "./ui";
 import {vec2, vec3, vec4} from "gl-matrix";
 
 namespace COLORS
@@ -20,6 +21,59 @@ namespace COLORS
     export const PINK: vec4 = [1, 0.75, 0.8, 1] as vec4;    
 }
 
+class Sphere
+{
+    private _radius: number;
+    private _color: vec4;
+
+    constructor(radius: number, color: vec4)
+    {
+        this._radius = radius;
+        this._color = color;
+    }
+
+    public get radius(): number { return this._radius; }
+    public set radius(value: number) { this._radius = value; }
+
+    public get color(): vec4 { return this._color; }
+    public set color(value: vec4) { this._color = value; }
+}
+
+interface SceneParameters
+{
+    sphere: Sphere;
+    lightDir?: vec3;
+    ambientLight?: number;
+    backgroundColor?: vec4;
+}
+
+class Scene
+{
+    private _sphere: Sphere;
+    private _lightDir: vec3;
+    private _ambientLight: number;
+    private _backgroundColor: vec4;
+
+    constructor({sphere, lightDir = vec3.fromValues(0, 1, 0), ambientLight = 0.1, backgroundColor = COLORS.BLACK}: SceneParameters)
+    {
+        this._sphere = sphere;
+        this._lightDir = lightDir;
+        this._ambientLight = ambientLight;
+        this._backgroundColor = backgroundColor;
+    }
+
+    public get sphere(): Sphere { return this._sphere; }
+
+    public get lightDir(): vec3 { return this._lightDir; }
+    public set lightDir(value: vec3) { this._lightDir = value; }
+
+    public get ambientLight(): number { return this._ambientLight; }
+    public set ambientLight(value: number) { this._ambientLight = value; }
+
+    public get backgroundColor(): vec4 { return this._backgroundColor; }
+    public set backgroundColor(value: vec4) { this._backgroundColor = value; }
+}
+
 export class Render
 {
     private _renderTarget: HTMLCanvasElement;
@@ -28,9 +82,9 @@ export class Render
     private _width: number;
     private _rgbBuffer: Uint8ClampedArray;
     private _image!: ImageData;
+    private _scene!: Scene;
     private _stats: Stats;
-    private _update: boolean = false;
-    private _counter: number = 0;
+    private _settings: ConfigurationComponent;
     
     constructor(canvasId: string)
     {
@@ -50,16 +104,39 @@ export class Render
 
         this._stats = new Stats();
         this._stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+
+        this._settings = new ConfigurationComponent();
+
         document.body.appendChild( this._stats.dom );
+        document.body.appendChild( this._settings.dom );
     }
 
-    public start(update: boolean = false): void
+    public start(): void
     {
-        this._update = update;
-        this.render();
+        this._scene = new Scene({sphere: new Sphere(0.5, COLORS.RED)});
+        this.update();
     }
 
-    private sample(backgroundColor: vec4, ambientLight: number, lightDir: vec3): void
+    private update(): void
+    {
+        this._scene.lightDir = vec3.normalize(vec3.create(), this._settings.lightDir);
+        this._scene.sphere.radius = this._settings.sphereRadius;
+        this._scene.sphere.color =  this._settings.sphereColor;
+        this.render(this._scene);
+        requestAnimationFrame(this.update.bind( this ));
+    }
+
+    private render(scene: Scene): void {
+        this._stats.begin();
+        if(this._settings.update)
+        {
+            this.sample(scene);
+            this.uploadBuffer();
+        }
+        this._stats.end();
+    }
+
+    private sample(scene: Scene): void
     {
         for(let y = 0; y < this._height; y++)
             for(let x = 0; x < this._width; x++)
@@ -68,30 +145,13 @@ export class Render
                 coord[0] = coord[0] * 2.0 - 1.0;
                 coord[1] = coord[1] * 2.0 - 1.0;
                 
-                let color: vec4 = this.perPixel(coord, backgroundColor, ambientLight, lightDir);
+                let color: vec4 = this.perPixel(coord, scene);
                 let index = (x + y * this._width) * 4;
                 this._rgbBuffer[index]     = color[0] * 255;
                 this._rgbBuffer[index + 1] = color[1] * 255;
                 this._rgbBuffer[index + 2] = color[2] * 255;
                 this._rgbBuffer[index + 3] = color[3] * 255;
             }
-    }
-
-    private render(): void {
-        this._stats.begin();
-        this._counter++;
-        let backgroundColor: vec4 = COLORS.BLACK;
-        let ambientLight: number = 0.05;
-
-        let lx: number = Math.cos(this._counter);
-        let lyz: number = -Math.sin(this._counter);
-        let lightDir: vec3 = vec3.normalize(vec3.create(), [lx, lyz, lyz]);
-        this.sample(backgroundColor, ambientLight, lightDir);
-        this.uploadBuffer();
-
-        this._stats.end();
-        if(this._update)
-            requestAnimationFrame(this.render.bind( this ));
     }
 
     private uploadBuffer(): void
@@ -109,12 +169,12 @@ export class Render
      * @param coord Coordinate of the pixel in the screen.
      * @returns Returns a color for each pixel.
      */
-    private perPixel(coord: vec2, backgroundColor: vec4, ambientLight: number, lightDir: vec3): vec4
+    private perPixel(coord: vec2, scene: Scene): vec4
     {
         let rayOrigin: vec3 = [0, 0, 1.0];
         let rayDirection: vec3 = [coord[0], coord[1], -1.0];
 
-        let radius: number = 0.5;
+        let radius: number = scene.sphere.radius;
 
         let a: number = vec3.dot(rayDirection, rayDirection);
         let b: number = 2.0 * vec3.dot(rayOrigin, rayDirection);
@@ -122,17 +182,17 @@ export class Render
         let d: number = b * b - 4.0 * a * c;
 
         if(d < 0.0)
-            return backgroundColor;
+            return scene.backgroundColor;
        
         let t: number = (-b - Math.sqrt(d)) / (2.0 * a);
         let hit: vec3 = vec3.scaleAndAdd(vec3.create(), rayOrigin, rayDirection, t);
 
         let normal: vec3 = vec3.normalize(vec3.create(), hit);
 
-        let diffuse: number = Math.max(ambientLight, vec3.dot(normal, vec3.negate(vec3.create(), lightDir)));
+        let diffuse: number = Math.max(scene.ambientLight, vec3.dot(normal, vec3.negate(vec3.create(), scene.lightDir)));
 
         let sphereColor = vec4.create(); 
-        vec4.copy(sphereColor, COLORS.PURPLE);
+        vec4.copy(sphereColor, scene.sphere.color);
         sphereColor[0] *= diffuse;
         sphereColor[1] *= diffuse;
         sphereColor[2] *= diffuse;
