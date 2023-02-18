@@ -8,6 +8,15 @@ export function hexToVec4(hex: string, alpha: number = 1): vec4 {
     return vec4.fromValues(r, g, b, alpha);
 }
 
+export function vec4ToHex(color: vec4): string
+{
+    const r = Math.floor(color[0] * 255);
+    const g = Math.floor(color[1] * 255);
+    const b = Math.floor(color[2] * 255);
+    const a = Math.floor(color[3] * 255);
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
 export namespace COLORS
 {
     export const RED: vec4 = [1, 0, 0, 1] as vec4;
