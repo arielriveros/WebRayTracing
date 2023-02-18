@@ -53,6 +53,8 @@ export class Render
 
     private sample(camera: Camera, scene: Scene): void
     {
+        vec3.normalize(scene.lightDir, scene.lightDir);
+
         const rayOrigin: vec3 = camera.position;
         let ray: Ray = new Ray();
         ray.origin = rayOrigin;
