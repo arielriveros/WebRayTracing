@@ -1,6 +1,7 @@
 import { vec3, vec4 } from "gl-matrix";
-import { Sphere } from "./sphere";
+import { Sphere } from "./objects/sphere";
 import { COLORS } from "./utils";
+import { VolumeObject } from "./objects/VolumeObject";
 
 interface SceneParameters
 {
@@ -11,20 +12,20 @@ interface SceneParameters
 
 export class Scene
 {
-    private _spheres: Array<Sphere>;
+    private _volumes: Array<VolumeObject>;
     private _lightDir: vec3;
     private _ambientLight: number;
     private _backgroundColor: vec4;
 
     constructor({lightDir = vec3.fromValues(0, 1, 0), ambientLight = 0.1, backgroundColor = COLORS.BLACK}: SceneParameters)
     {
-        this._spheres = [];
+        this._volumes = [];
         this._lightDir = lightDir;
         this._ambientLight = ambientLight;
         this._backgroundColor = backgroundColor;
     }
 
-    public get spheres(): Array<Sphere> { return this._spheres; }
+    public get volumes(): Array<VolumeObject> { return this._volumes; }
 
     public get lightDir(): vec3 { return this._lightDir; }
     public set lightDir(value: vec3) { this._lightDir = value; }
@@ -37,12 +38,12 @@ export class Scene
 
     public addSphere(sphere: Sphere): void
     {
-        this._spheres.push(sphere);
+        this._volumes.push(sphere);
     }
 
     public removeSphere(index: number): void
     {
         if(index !== -1)
-            this._spheres.splice(index, 1);
+            this._volumes.splice(index, 1);
     }
 }

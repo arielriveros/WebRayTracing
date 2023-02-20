@@ -1,7 +1,7 @@
 import { vec3, vec4} from "gl-matrix";
 import { Camera } from "./camera";
 import { Scene } from "./scene";
-import { Sphere } from "./sphere";
+import { Sphere } from "./objects/sphere";
 import { Ray } from "./ray";
 
 
@@ -76,19 +76,19 @@ export class Render
 
     private traceRay(ray: Ray, scene: Scene): vec4
     {
-        if(scene.spheres.length == 0)
+        if(scene.volumes.length == 0)
             return scene.backgroundColor;
 
         
         let closestSphere: Sphere | null = null;
         let hitDistance: number = Number.MAX_VALUE;
-        for(let sphere of scene.spheres)
+        for(let sphere of scene.volumes)
         {
             let origin: vec3 = vec3.create();
             vec3.add(origin, ray.origin, sphere.position);
             let a: number = vec3.dot(ray.direction, ray.direction);
             let b: number = 2.0 * vec3.dot(origin, ray.direction);
-            let c: number = vec3.dot(origin, origin) - sphere.radius * sphere.radius;
+            let c: number = vec3.dot(origin, origin) - (sphere as Sphere).radius * (sphere as Sphere).radius;
             let d: number = b * b - 4.0 * a * c;
     
             if(d < 0.0)
@@ -98,7 +98,7 @@ export class Render
             if(t < hitDistance)
             {
                 hitDistance = t;
-                closestSphere = sphere;
+                closestSphere = sphere as Sphere;
             }
         }
 

@@ -1,7 +1,7 @@
 import { vec3, vec4 } from "gl-matrix";
 import { hexToVec4, vec4ToHex } from "./utils";
 import { Scene } from "./scene";
-import { Sphere } from "./sphere";
+import { Sphere } from "./objects/sphere";
 
 export class UserInterface
 {
@@ -143,7 +143,7 @@ export class UserInterface
         spheresLabel.innerText = "Spheres";
         spheresContainer.appendChild(spheresLabel);
 
-        for(let i = 0; i < this._scene.spheres.length; i++)
+        for(let i = 0; i < this._scene.volumes.length; i++)
         {
             let sphereContainer = this.setUpSphere(i);
             spheresContainer.appendChild(sphereContainer);
@@ -235,10 +235,10 @@ export class UserInterface
         sphereRadius.min = "0";
         sphereRadius.max = "1";
         sphereRadius.step = "0.01";
-        sphereRadius.value = this._scene.spheres[index].radius.toString();
+        sphereRadius.value = (this._scene.volumes[index] as Sphere).radius.toString();
         sphereRadius.style.width = "100%";
         sphereRadius.addEventListener("input", (e) => {
-            this._scene.spheres[index].radius = parseFloat((e.target as HTMLInputElement).value);
+            (this._scene.volumes[index] as Sphere).radius = parseFloat((e.target as HTMLInputElement).value);
         });
 
         const sphereRadiusLabel = document.createElement("label");
@@ -255,10 +255,10 @@ export class UserInterface
         const sphereColor = document.createElement("input");
         sphereColor.id = `sphere-${index}-color`;
         sphereColor.type = "color";
-        sphereColor.value = vec4ToHex(this._scene.spheres[index].color);
+        sphereColor.value = vec4ToHex(this._scene.volumes[index].color);
         sphereColor.style.width = "100%";
         sphereColor.addEventListener("input", (e) => {
-            this._scene.spheres[index].color = hexToVec4((e.target as HTMLInputElement).value);
+            this._scene.volumes[index].color = hexToVec4((e.target as HTMLInputElement).value);
         });
 
         const sphereColorLabel = document.createElement("label");
@@ -288,11 +288,11 @@ export class UserInterface
         spherePos.min = "-10";
         spherePos.max = "10";
         spherePos.step = "0.1";
-        spherePos.value = this._scene.spheres[index].position[axis === 'X' ? 0 : axis === 'Y' ? 1 : 2].toString();
+        spherePos.value = this._scene.volumes[index].position[axis === 'X' ? 0 : axis === 'Y' ? 1 : 2].toString();
         spherePos.style.width = "100%";
         const axisIndex = axis === 'X' ? 0 : axis === 'Y' ? 1 : 2;
         spherePos.addEventListener("input", (e) => {
-            this._scene.spheres[index].position[axisIndex] = parseFloat((e.target as HTMLInputElement).value);
+            this._scene.volumes[index].position[axisIndex] = parseFloat((e.target as HTMLInputElement).value);
         });
 
         return spherePos;

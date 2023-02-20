@@ -4,7 +4,7 @@ import { Render } from "./renderer";
 import { Scene } from "./scene";
 import { COLORS } from "./utils";
 import Stats from "stats.js";
-import { Sphere } from "./sphere";
+import { Sphere } from "./objects/sphere";
 import { UserInterface } from "./ui";
 
 export class Application
