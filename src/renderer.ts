@@ -3,6 +3,7 @@ import { Camera } from "./camera";
 import { Scene } from "./scene";
 import { Sphere } from "./objects/sphere";
 import { Ray } from "./ray";
+import { VolumeObject } from "./objects/VolumeObject";
 
 
 export class Render
@@ -78,17 +79,18 @@ export class Render
     {
         if(scene.volumes.length == 0)
             return scene.backgroundColor;
-
         
-        let closestSphere: Sphere | null = null;
+        let closestVolume: VolumeObject | null = null;
         let hitDistance: number = Number.MAX_VALUE;
-        for(let sphere of scene.volumes)
+
+        for(let volume of scene.volumes)
         {
+            let sphere = volume as Sphere;
             let origin: vec3 = vec3.create();
             vec3.add(origin, ray.origin, sphere.position);
             let a: number = vec3.dot(ray.direction, ray.direction);
             let b: number = 2.0 * vec3.dot(origin, ray.direction);
-            let c: number = vec3.dot(origin, origin) - (sphere as Sphere).radius * (sphere as Sphere).radius;
+            let c: number = vec3.dot(origin, origin) - sphere.radius * sphere.radius;
             let d: number = b * b - 4.0 * a * c;
     
             if(d < 0.0)
@@ -98,28 +100,28 @@ export class Render
             if(t < hitDistance)
             {
                 hitDistance = t;
-                closestSphere = sphere as Sphere;
+                closestVolume = sphere as Sphere;
             }
         }
 
-        if(closestSphere == null)
+        if(closestVolume == null)
             return scene.backgroundColor;
 
         let origin: vec3 = vec3.create();
-        vec3.add(origin, ray.origin, closestSphere.position);
+        vec3.add(origin, ray.origin, closestVolume.position);
         let hit: vec3 = vec3.scaleAndAdd(vec3.create(), origin, ray.direction, hitDistance);
 
         let normal: vec3 = vec3.normalize(vec3.create(), hit);
 
         let diffuse: number = Math.max(scene.ambientLight, vec3.dot(normal, vec3.negate(vec3.create(), scene.lightDir)));
 
-        let sphereColor = vec4.create(); 
-        vec4.copy(sphereColor, closestSphere.color);
-        sphereColor[0] *= diffuse;
-        sphereColor[1] *= diffuse;
-        sphereColor[2] *= diffuse;
+        let volumeColor = vec4.create(); 
+        vec4.copy(volumeColor, closestVolume.color);
+        volumeColor[0] *= diffuse;
+        volumeColor[1] *= diffuse;
+        volumeColor[2] *= diffuse;
         
-        return sphereColor;        
+        return volumeColor;        
     }
 
     public get renderTarget(): HTMLCanvasElement { return this._renderTarget; }
