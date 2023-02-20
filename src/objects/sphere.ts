@@ -14,7 +14,7 @@ export class Sphere extends VolumeObject
 
     constructor({position = vec3.fromValues(0, 0, 0), radius = 1, color = vec4.fromValues(1, 1, 1, 1)}: SphereParameters)
     {
-        super(position, color);
+        super(position, color, 'sphere');
         this._radius = radius;
     }
 

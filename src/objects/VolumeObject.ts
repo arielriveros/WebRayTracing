@@ -1,14 +1,18 @@
 import { vec3, vec4 } from "gl-matrix";
 
+type VolumeType = 'sphere' | 'cube';
+
 export abstract class VolumeObject
 {
     private _position: vec3;
     private _color: vec4;
+    private _type: VolumeType;
 
-    constructor (position: vec3, color: vec4)
+    constructor (position: vec3, color: vec4, type: VolumeType)
     {
         this._position = position;
         this._color = color;
+        this._type = type;
     }
 
     public get position(): vec3 { return this._position; }
@@ -16,4 +20,6 @@ export abstract class VolumeObject
 
     public get color(): vec4 { return this._color; }
     public set color(value: vec4) { this._color = value; }
+
+    public get type(): VolumeType { return this._type; }
 }

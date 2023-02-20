@@ -6,6 +6,7 @@ import { COLORS } from "./utils";
 import Stats from "stats.js";
 import { Sphere } from "./objects/sphere";
 import { UserInterface } from "./ui";
+import { Cube } from "./objects/cube";
 
 export class Application
 {
@@ -29,6 +30,13 @@ export class Application
 
         this._scene.lightDir = vec3.normalize(vec3.create(), vec3.fromValues(0, 0, 1));
         
+        // Add a sphere
+        const sphere = new Sphere({position: vec3.fromValues(1, 1, 0), radius: 0.5, color: COLORS.RED});
+        this._scene.addVolume(sphere);
+
+        // Add a cube
+        const cube = new Cube({position: vec3.fromValues(0, 0, 0), size: 0.5, color: COLORS.YELLOW});
+        this._scene.addVolume(cube);
 
         // Move position on mouse move and clicking
         this._renderer.renderTarget.addEventListener("mousemove", (e) => {

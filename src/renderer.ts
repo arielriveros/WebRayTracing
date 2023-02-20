@@ -4,6 +4,7 @@ import { Scene } from "./scene";
 import { Sphere } from "./objects/sphere";
 import { Ray } from "./ray";
 import { VolumeObject } from "./objects/VolumeObject";
+import { Cube } from "./objects/cube";
 
 
 export class Render
@@ -82,32 +83,101 @@ export class Render
         
         let closestVolume: VolumeObject | null = null;
         let hitDistance: number = Number.MAX_VALUE;
+        let origin: vec3 = vec3.create();
 
         for(let volume of scene.volumes)
         {
-            let sphere = volume as Sphere;
-            let origin: vec3 = vec3.create();
-            vec3.add(origin, ray.origin, sphere.position);
-            let a: number = vec3.dot(ray.direction, ray.direction);
-            let b: number = 2.0 * vec3.dot(origin, ray.direction);
-            let c: number = vec3.dot(origin, origin) - sphere.radius * sphere.radius;
-            let d: number = b * b - 4.0 * a * c;
-    
-            if(d < 0.0)
-                continue;
-           
-            let t: number = (-b - Math.sqrt(d)) / (2.0 * a);
-            if(t < hitDistance)
+            
+            vec3.add(origin, ray.origin, volume.position);
+
+            switch(volume.type)
             {
-                hitDistance = t;
-                closestVolume = sphere as Sphere;
+                case 'sphere':
+                    let sphere = volume as Sphere;
+
+                    let a: number = vec3.dot(ray.direction, ray.direction);
+                    let b: number = 2.0 * vec3.dot(origin, ray.direction);
+                    let c: number = vec3.dot(origin, origin) - sphere.radius * sphere.radius;
+                    let d: number = b * b - 4.0 * a * c;
+            
+                    if(d < 0.0)
+                        continue;
+                
+                    let t: number = (-b - Math.sqrt(d)) / (2.0 * a);
+                    if(t < hitDistance)
+                    {
+                        hitDistance = t;
+                        closestVolume = sphere as Sphere;
+                    }
+                    break;
+
+                case 'cube':
+                    let cube = volume as Cube;
+
+                    let tmin: number = (cube.min[0] - origin[0]) / ray.direction[0];
+                    let tmax: number = (cube.max[0] - origin[0]) / ray.direction[0];
+
+                    if(tmin > tmax)
+                    {
+                        let temp: number = tmin;
+                        tmin = tmax;
+                        tmax = temp;
+                    }
+
+                    let tymin: number = (cube.min[1] - origin[1]) / ray.direction[1];
+                    let tymax: number = (cube.max[1] - origin[1]) / ray.direction[1];
+
+                    if(tymin > tymax)
+                    {
+                        let temp: number = tymin;
+                        tymin = tymax;
+                        tymax = temp;
+                    }
+
+                    if((tmin > tymax) || (tymin > tmax))
+                        continue;
+
+                    if(tymin > tmin)
+                        tmin = tymin;
+
+                    if(tymax < tmax)
+                        tmax = tymax;
+                    
+                    let tzmin: number = (cube.min[2] - origin[2]) / ray.direction[2];
+                    let tzmax: number = (cube.max[2] - origin[2]) / ray.direction[2];
+
+                    if(tzmin > tzmax)
+                    {
+                        let temp: number = tzmin;
+                        tzmin = tzmax;
+                        tzmax = temp;
+                    }
+
+                    if((tmin > tzmax) || (tzmin > tmax))
+                        continue;
+
+                    if(tzmin > tmin)
+                        tmin = tzmin;
+
+                    if(tzmax < tmax)
+                        tmax = tzmax;
+
+                    if(tmin < hitDistance)
+                    {
+                        hitDistance = tmin;
+                        closestVolume = cube as Cube;
+                    }
+                    break;
+
+                default:
+                    break;
             }
         }
 
         if(closestVolume == null)
             return scene.backgroundColor;
 
-        let origin: vec3 = vec3.create();
+        origin = vec3.create();
         vec3.add(origin, ray.origin, closestVolume.position);
         let hit: vec3 = vec3.scaleAndAdd(vec3.create(), origin, ray.direction, hitDistance);
 
