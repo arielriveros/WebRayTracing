@@ -22,4 +22,6 @@ export abstract class VolumeObject
     public set color(value: vec4) { this._color = value; }
 
     public get type(): VolumeType { return this._type; }
+
+    public getNormalAtPoint(point: vec3): vec3 { return vec3.create(); }
 }

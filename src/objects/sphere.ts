@@ -1,5 +1,5 @@
 import { vec3, vec4 } from "gl-matrix";
-import { VolumeObject } from "./VolumeObject";
+import { VolumeObject } from "./volumeObject";
 
 interface SphereParameters
 {
@@ -20,4 +20,8 @@ export class Sphere extends VolumeObject
 
     public get radius(): number { return this._radius; }
     public set radius(value: number) { this._radius = value; }
+
+    public override getNormalAtPoint(point: vec3): vec3 {
+        return vec3.normalize(vec3.create(), point);
+    }
 }

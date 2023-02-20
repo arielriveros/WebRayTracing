@@ -3,7 +3,7 @@ import { Camera } from "./camera";
 import { Scene } from "./scene";
 import { Sphere } from "./objects/sphere";
 import { Ray } from "./ray";
-import { VolumeObject } from "./objects/VolumeObject";
+import { VolumeObject } from "./objects/volumeObject";
 import { Cube } from "./objects/cube";
 
 
@@ -181,7 +181,7 @@ export class Render
         vec3.add(origin, ray.origin, closestVolume.position);
         let hit: vec3 = vec3.scaleAndAdd(vec3.create(), origin, ray.direction, hitDistance);
 
-        let normal: vec3 = vec3.normalize(vec3.create(), hit);
+        let normal: vec3 = closestVolume.getNormalAtPoint(hit);
 
         let diffuse: number = Math.max(scene.ambientLight, vec3.dot(normal, vec3.negate(vec3.create(), scene.lightDir)));
 

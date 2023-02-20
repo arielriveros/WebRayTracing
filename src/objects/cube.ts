@@ -1,5 +1,5 @@
 import { vec3, vec4 } from "gl-matrix";
-import { VolumeObject } from "./VolumeObject";
+import { VolumeObject } from "./volumeObject";
 
 interface CubeParameters
 {
@@ -34,5 +34,29 @@ export class Cube extends VolumeObject
             vec3.fromValues(0, 0, 1),
             vec3.fromValues(0, 0, -1)
         ];
+    }
+
+    public override getNormalAtPoint(point: vec3): vec3
+    {
+        let normal = vec3.create();
+        let min = this.min;
+        let max = this.max;
+
+        if(point[0] === min[0])
+            normal[0] = -1;
+        else if(point[0] === max[0])
+            normal[0] = 1;
+        
+        if(point[1] === min[1])
+            normal[1] = -1;
+        else if(point[1] === max[1])
+            normal[1] = 1;
+
+        if(point[2] === min[2])
+            normal[2] = -1;
+        else if(point[2] === max[2])
+            normal[2] = 1;
+        
+        return normal;
     }
 }
