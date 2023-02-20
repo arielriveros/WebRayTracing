@@ -1,5 +1,4 @@
 import { vec3, vec4 } from "gl-matrix";
-import { Sphere } from "./objects/sphere";
 import { COLORS } from "./utils";
 import { VolumeObject } from "./objects/volumeObject";
 

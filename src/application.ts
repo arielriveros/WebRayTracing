@@ -35,7 +35,7 @@ export class Application
         this._scene.addVolume(sphere);
 
         // Add a cube
-        const cube = new Cube({position: vec3.fromValues(0, 0, 0), size: 0.5, color: COLORS.YELLOW});
+        const cube = new Cube({position: vec3.fromValues(0, 0.5, 0), size: 0.5, color: COLORS.YELLOW});
         this._scene.addVolume(cube);
 
         // Move position on mouse move and clicking
