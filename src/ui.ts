@@ -50,7 +50,6 @@ export class UserInterface
         const lightDirLabel = document.createElement("label");
         lightDirLabel.htmlFor = "lightDir";
         lightDirLabel.innerText = "Light Direction";
-        lightDirLabel.style.position = "relative";
         lightDirLabel.style.top = "0px";
         lightDirLabel.style.left = "0px";
         lightDirLabel.style.width = "100%";
@@ -146,70 +145,59 @@ export class UserInterface
 
     private setUpSpheres(): void
     {
+        const spheresContainer = document.createElement("div");
+        spheresContainer.id = "spheres-container";
+
+        const spheresLabel = document.createElement("label");
+        spheresLabel.htmlFor = "spheres";
+        spheresLabel.innerText = "Spheres";
+        spheresContainer.appendChild(spheresLabel);
+
         for(let i = 0; i < this._scene.spheres.length; i++)
         {
-            this.setUpSphere(i);
+            let sphereContainer = this.setUpSphere(i);
+            spheresContainer.appendChild(sphereContainer);
         }
+
+        this._dom.appendChild(spheresContainer);
     }
 
-    private setUpSphere(index: number): void
+    private setUpSphere(index: number): HTMLDivElement
     {
         const sphereContainer = document.createElement("div");
         sphereContainer.id = `sphere-${index}-container`;
         sphereContainer.style.position = "relative";
         sphereContainer.style.border = "1px solid black";
+        sphereContainer.style.padding = "5px";
 
         const sphereLabel = document.createElement("label");
         sphereLabel.htmlFor = `sphere-${index}`;
         sphereLabel.innerText = `Sphere ${index}`;
-        sphereLabel.style.position = "relative";
-        sphereLabel.style.top = "0px";
-        sphereLabel.style.left = "0px";
-        sphereLabel.style.width = "100%";
-        sphereLabel.style.textAlign = "center";
-        sphereLabel.style.color = "white";
-        sphereLabel.style.fontFamily = "sans-serif";
-        sphereLabel.style.fontSize = "12px";
-        sphereLabel.style.fontWeight = "bold";
-        sphereLabel.style.textShadow = "0px 0px 1px black";
 
         sphereContainer.appendChild(sphereLabel);
 
-        const sphereX = document.createElement("input");
-        sphereX.id = `sphere-${index}-x`;
-        sphereX.type = "range";
-        sphereX.min = "-1";
-        sphereX.max = "1";
-        sphereX.step = "0.01";
-        sphereX.value = "0";
-        sphereX.style.width = "100%";
-        sphereX.addEventListener("input", (e) => {
-            this._scene.spheres[index].position[0] = parseFloat((e.target as HTMLInputElement).value);
-        });
+        const spherePosContainer = document.createElement("div");
+        spherePosContainer.id = `sphere-${index}-pos-container`;
+        spherePosContainer.style.border = "1px solid black";
+        spherePosContainer.style.display = "flex";
 
-        const sphereY = document.createElement("input");
-        sphereY.id = `sphere-${index}-y`;
-        sphereY.type = "range";
-        sphereY.min = "-1";
-        sphereY.max = "1";
-        sphereY.step = "0.01";
-        sphereY.value = "0";
-        sphereY.style.width = "100%";
-        sphereY.addEventListener("input", (e) => {
-            this._scene.spheres[index].position[1] = parseFloat((e.target as HTMLInputElement).value);
-        });
+        const spherePosLabel = document.createElement("label");
+        spherePosLabel.htmlFor = `sphere-${index}-pos`;
+        spherePosLabel.innerText = `Position`;
 
-        const sphereZ = document.createElement("input");
-        sphereZ.id = `sphere-${index}-z`;
-        sphereZ.type = "range";
-        sphereZ.min = "-1";
-        sphereZ.max = "1";
-        sphereZ.step = "0.01";
-        sphereZ.value = "0";
-        sphereZ.style.width = "100%";
-        sphereZ.addEventListener("input", (e) => {
-            this._scene.spheres[index].position[2] = parseFloat((e.target as HTMLInputElement).value);
-        });
+        spherePosContainer.appendChild(spherePosLabel);
+        const sphereX = this.setUpSpherePosition(index, 'X');
+        const sphereY = this.setUpSpherePosition(index, 'Y');
+        const sphereZ = this.setUpSpherePosition(index, 'Z');
+
+        spherePosContainer.appendChild(sphereX);
+        spherePosContainer.appendChild(sphereY);
+        spherePosContainer.appendChild(sphereZ);
+
+        const spherePropertiesContainer = document.createElement("div");
+        spherePropertiesContainer.id = `sphere-${index}-properties-container`;
+        spherePropertiesContainer.style.border = "1px solid black";
+        spherePropertiesContainer.style.display = "flex";
 
         const sphereRadius = document.createElement("input");
         sphereRadius.id = `sphere-${index}-radius`;
@@ -223,23 +211,61 @@ export class UserInterface
             this._scene.spheres[index].radius = parseFloat((e.target as HTMLInputElement).value);
         });
 
+        const sphereRadiusLabel = document.createElement("label");
+        sphereRadiusLabel.htmlFor = `sphere-${index}-radius`;
+        sphereRadiusLabel.innerText = `Radius`;
+
+        const sphereRadiusContainer = document.createElement("div");
+        sphereRadiusContainer.id = `sphere-${index}-radius-container`;
+
+        sphereRadiusContainer.appendChild(sphereRadiusLabel);
+        sphereRadiusContainer.appendChild(sphereRadius);
+
+
         const sphereColor = document.createElement("input");
         sphereColor.id = `sphere-${index}-color`;
         sphereColor.type = "color";
         sphereColor.value = vec4ToHex(this._scene.spheres[index].color);
-        console.log(vec4ToHex(this._scene.spheres[index].color));
         sphereColor.style.width = "100%";
         sphereColor.addEventListener("input", (e) => {
             this._scene.spheres[index].color = hexToVec4((e.target as HTMLInputElement).value);
         });
 
-        sphereContainer.appendChild(sphereX);
-        sphereContainer.appendChild(sphereY);
-        sphereContainer.appendChild(sphereZ);
-        sphereContainer.appendChild(sphereRadius);
-        sphereContainer.appendChild(sphereColor);
+        const sphereColorLabel = document.createElement("label");
+        sphereColorLabel.htmlFor = `sphere-${index}-color`;
+        sphereColorLabel.innerText = `Color`;
 
-        this._dom.appendChild(sphereContainer);
+        const sphereColorContainer = document.createElement("div");
+        sphereColorContainer.id = `sphere-${index}-color-container`;
+
+        sphereColorContainer.appendChild(sphereColorLabel);
+        sphereColorContainer.appendChild(sphereColor);
+
+        spherePropertiesContainer.appendChild(sphereRadiusContainer);
+        spherePropertiesContainer.appendChild(sphereColorContainer);
+        
+        sphereContainer.appendChild(spherePosContainer);
+        sphereContainer.appendChild(spherePropertiesContainer);
+
+        return sphereContainer;
+    }
+
+    private setUpSpherePosition(index:number, axis: 'X' | 'Y' | 'Z'): HTMLInputElement
+    {
+        const spherePos = document.createElement("input");
+        spherePos.id = `sphere-${index}-${axis.toLowerCase()}}`;
+        spherePos.type = "number";
+        spherePos.min = "-10";
+        spherePos.max = "10";
+        spherePos.step = "0.1";
+        spherePos.value = "0";
+        spherePos.style.width = "100%";
+        const axisIndex = axis === 'X' ? 0 : axis === 'Y' ? 1 : 2;
+        spherePos.addEventListener("input", (e) => {
+            this._scene.spheres[index].position[axisIndex] = parseFloat((e.target as HTMLInputElement).value);
+        });
+
+        return spherePos;
     }
 
     public get dom(): HTMLDivElement { return this._dom; }
