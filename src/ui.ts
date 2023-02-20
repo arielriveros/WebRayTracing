@@ -1,6 +1,7 @@
 import { vec3, vec4 } from "gl-matrix";
 import { hexToVec4, vec4ToHex } from "./utils";
 import { Scene } from "./scene";
+import { Sphere } from "./sphere";
 
 export class UserInterface
 {
@@ -145,6 +146,10 @@ export class UserInterface
 
     private setUpSpheres(): void
     {
+        if(document.getElementById("spheres-container") != null)
+        {
+            document.getElementById("spheres-container")?.remove();
+        }
         const spheresContainer = document.createElement("div");
         spheresContainer.id = "spheres-container";
 
@@ -158,8 +163,19 @@ export class UserInterface
             let sphereContainer = this.setUpSphere(i);
             spheresContainer.appendChild(sphereContainer);
         }
+        const addSphereButton = document.createElement("button");
+        addSphereButton.id = "add-sphere-button";
+        addSphereButton.innerText = "Add Sphere";
+        addSphereButton.addEventListener("click", () => {
+            this._scene.addSphere(new Sphere({}));
+            this.setUpSpheres();
+        });
+
+        spheresContainer.appendChild(addSphereButton);
 
         this._dom.appendChild(spheresContainer);
+
+        
     }
 
     private setUpSphere(index: number): HTMLDivElement
@@ -176,9 +192,18 @@ export class UserInterface
 
         sphereContainer.appendChild(sphereLabel);
 
+        const sphereRemoveButton = document.createElement("button");
+        sphereRemoveButton.id = `sphere-${index}-remove-button`;
+        sphereRemoveButton.innerText = "Remove";
+        sphereRemoveButton.addEventListener("click", () => {
+            this._scene.removeSphere(index);
+            this.setUpSpheres();
+        });
+
+        sphereContainer.appendChild(sphereRemoveButton);
+
         const spherePosContainer = document.createElement("div");
         spherePosContainer.id = `sphere-${index}-pos-container`;
-        spherePosContainer.style.border = "1px solid black";
         spherePosContainer.style.display = "flex";
 
         const spherePosLabel = document.createElement("label");
@@ -196,7 +221,6 @@ export class UserInterface
 
         const spherePropertiesContainer = document.createElement("div");
         spherePropertiesContainer.id = `sphere-${index}-properties-container`;
-        spherePropertiesContainer.style.border = "1px solid black";
         spherePropertiesContainer.style.display = "flex";
 
         const sphereRadius = document.createElement("input");
@@ -205,7 +229,7 @@ export class UserInterface
         sphereRadius.min = "0";
         sphereRadius.max = "1";
         sphereRadius.step = "0.01";
-        sphereRadius.value = "0.5";
+        sphereRadius.value = this._scene.spheres[index].radius.toString();
         sphereRadius.style.width = "100%";
         sphereRadius.addEventListener("input", (e) => {
             this._scene.spheres[index].radius = parseFloat((e.target as HTMLInputElement).value);
@@ -258,7 +282,7 @@ export class UserInterface
         spherePos.min = "-10";
         spherePos.max = "10";
         spherePos.step = "0.1";
-        spherePos.value = "0";
+        spherePos.value = this._scene.spheres[index].position[axis === 'X' ? 0 : axis === 'Y' ? 1 : 2].toString();
         spherePos.style.width = "100%";
         const axisIndex = axis === 'X' ? 0 : axis === 'Y' ? 1 : 2;
         spherePos.addEventListener("input", (e) => {
