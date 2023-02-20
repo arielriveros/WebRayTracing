@@ -2,6 +2,7 @@ import { vec3, vec4 } from "gl-matrix";
 import { hexToVec4, vec4ToHex } from "./utils";
 import { Scene } from "./scene";
 import { Sphere } from "./objects/sphere";
+import { Cube } from "./objects/cube";
 
 export class UserInterface
 {
@@ -38,7 +39,7 @@ export class UserInterface
     {
         this.setUpDirectionalLight();
         this.setUpBackgroundColor();
-        this.setUpSpheres();
+        this.setUpVolumes();
     }
 
     private setUpDirectionalLight(): void
@@ -129,37 +130,44 @@ export class UserInterface
 
     }
 
-    private setUpSpheres(): void
+    private setUpVolumes(): void
     {
-        if(document.getElementById("spheres-container") != null)
-        {
-            document.getElementById("spheres-container")?.remove();
-        }
-        const spheresContainer = document.createElement("div");
-        spheresContainer.id = "spheres-container";
+        if(document.getElementById("volumes-container") != null)
+            document.getElementById("volumes-container")?.remove();
 
-        const spheresLabel = document.createElement("label");
-        spheresLabel.htmlFor = "spheres";
-        spheresLabel.innerText = "Spheres";
-        spheresContainer.appendChild(spheresLabel);
+        const volumesContainer = document.createElement("div");
+        volumesContainer.id = "volumes-container";
+
+        const volumesLabel = document.createElement("label");
+        volumesLabel.htmlFor = "volumes";
+        volumesLabel.innerText = "Volumes";
+        volumesContainer.appendChild(volumesLabel);
 
         for(let i = 0; i < this._scene.volumes.length; i++)
         {
-            if(this._scene.volumes[i] instanceof Sphere)
+            switch(this._scene.volumes[i].type)
             {
-                let sphereContainer = this.setUpSphere(i);
-                spheresContainer.appendChild(sphereContainer);
+                case "sphere":
+                    let sphereContainer = this.setUpSphere(i);
+                    volumesContainer.appendChild(sphereContainer);
+                    break;
+                case "cube":
+                    let cubeContainer = this.setUpCube(i);
+                    volumesContainer.appendChild(cubeContainer);
+                default:
+                    break;
             }
         }
+
         const addSphereButton = document.createElement("button");
         addSphereButton.id = "add-sphere-button";
         addSphereButton.innerText = "Add Sphere";
         addSphereButton.addEventListener("click", () => {
-            this._scene.addVolume(new Sphere({}));
-            this.setUpSpheres();
+            this._scene.addVolume(new Sphere({radius: 0.25}));
+            this.setUpVolumes();
         });
 
-        spheresContainer.appendChild(addSphereButton);
+        volumesContainer.appendChild(addSphereButton);
 
         const addRandomSphereButton = document.createElement("button");
         addRandomSphereButton.id = "add-random-sphere-button";
@@ -179,12 +187,45 @@ export class UserInterface
                     1
                 )
             }));
-            this.setUpSpheres();
+            this.setUpVolumes();
         });
 
-        spheresContainer.appendChild(addRandomSphereButton);
+        volumesContainer.appendChild(addRandomSphereButton);
 
-        this._dom.appendChild(spheresContainer);
+        const addCubeButton = document.createElement("button");
+        addCubeButton.id = "add-cube-button";
+        addCubeButton.innerText = "Add Cube";
+        addCubeButton.addEventListener("click", () => {
+            this._scene.addVolume(new Cube({size: 0.25}));
+            this.setUpVolumes();
+        });
+
+        volumesContainer.appendChild(addCubeButton);
+
+        const addRandomCubeButton = document.createElement("button");
+        addRandomCubeButton.id = "add-random-cube-button";
+        addRandomCubeButton.innerText = "Add Random Cube";
+        addRandomCubeButton.addEventListener("click", () => {
+            this._scene.addVolume(new Cube({
+                position: vec3.fromValues(
+                    Math.random() * 2 - 1,
+                    Math.random() * 2 - 1,
+                    Math.random() * 2 - 1
+                ),
+                size: Math.random() * 0.5 + 0.5,
+                color: vec4.fromValues(
+                    Math.random(),
+                    Math.random(),
+                    Math.random(),
+                    1
+                )
+            }));
+            this.setUpVolumes();
+        });
+
+        volumesContainer.appendChild(addRandomCubeButton);
+
+        this._dom.appendChild(volumesContainer);
     }
 
     private setUpSphere(index: number): HTMLDivElement
@@ -206,7 +247,7 @@ export class UserInterface
         sphereRemoveButton.innerText = "Remove";
         sphereRemoveButton.addEventListener("click", () => {
             this._scene.removeVolume(index);
-            this.setUpSpheres();
+            this.setUpVolumes();
         });
 
         sphereContainer.appendChild(sphereRemoveButton);
@@ -220,9 +261,9 @@ export class UserInterface
         spherePosLabel.innerText = `Position`;
 
         spherePosContainer.appendChild(spherePosLabel);
-        const sphereX = this.setUpSpherePosition(index, 'X');
-        const sphereY = this.setUpSpherePosition(index, 'Y');
-        const sphereZ = this.setUpSpherePosition(index, 'Z');
+        const sphereX = this.setUpPosition(index, 'X', 'sphere');
+        const sphereY = this.setUpPosition(index, 'Y', 'sphere');
+        const sphereZ = this.setUpPosition(index, 'Z', 'sphere');
 
         spherePosContainer.appendChild(sphereX);
         spherePosContainer.appendChild(sphereY);
@@ -283,22 +324,119 @@ export class UserInterface
         return sphereContainer;
     }
 
-    private setUpSpherePosition(index:number, axis: 'X' | 'Y' | 'Z'): HTMLInputElement
+    private setUpCube(index: number): HTMLDivElement
     {
-        const spherePos = document.createElement("input");
-        spherePos.id = `sphere-${index}-${axis.toLowerCase()}}`;
-        spherePos.type = "number";
-        spherePos.min = "-10";
-        spherePos.max = "10";
-        spherePos.step = "0.1";
-        spherePos.value = this._scene.volumes[index].position[axis === 'X' ? 0 : axis === 'Y' ? 1 : 2].toString();
-        spherePos.style.width = "100%";
+        const cubeContainer = document.createElement("div");
+        cubeContainer.id = `cube-${index}-container`;
+        cubeContainer.style.position = "relative";
+        cubeContainer.style.border = "1px solid black";
+        cubeContainer.style.padding = "5px";
+
+        const cubeLabel = document.createElement("label");
+        cubeLabel.htmlFor = `cube-${index}`;
+        cubeLabel.innerText = `cube ${index}`;
+
+        cubeContainer.appendChild(cubeLabel);
+
+        const cubeRemoveButton = document.createElement("button");
+        cubeRemoveButton.id = `cube-${index}-remove-button`;
+        cubeRemoveButton.innerText = "Remove";
+        cubeRemoveButton.addEventListener("click", () => {
+            this._scene.removeVolume(index);
+            this.setUpVolumes();
+        });
+
+        cubeContainer.appendChild(cubeRemoveButton);
+
+        const cubePosContainer = document.createElement("div");
+        cubePosContainer.id = `cube-${index}-pos-container`;
+        cubePosContainer.style.display = "flex";
+
+        const cubePosLabel = document.createElement("label");
+        cubePosLabel.htmlFor = `cube-${index}-pos`;
+        cubePosLabel.innerText = `Position`;
+
+        cubePosContainer.appendChild(cubePosLabel);
+        const cubeX = this.setUpPosition(index, 'X', 'cube');
+        const cubeY = this.setUpPosition(index, 'Y', 'cube');
+        const cubeZ = this.setUpPosition(index, 'Z', 'cube');
+
+        cubePosContainer.appendChild(cubeX);
+        cubePosContainer.appendChild(cubeY);
+        cubePosContainer.appendChild(cubeZ);
+
+        const cubePropertiesContainer = document.createElement("div");
+        cubePropertiesContainer.id = `cube-${index}-properties-container`;
+        cubePropertiesContainer.style.display = "flex";
+
+        const cubeSize = document.createElement("input");
+        cubeSize.id = `cube-${index}-size`;
+        cubeSize.type = "range";
+        cubeSize.min = "0";
+        cubeSize.max = "1";
+        cubeSize.step = "0.01";
+        cubeSize.value = (this._scene.volumes[index] as Cube).size?.toString();
+        cubeSize.style.width = "100%";
+        cubeSize.addEventListener("input", (e) => {
+            (this._scene.volumes[index] as Cube).size = parseFloat((e.target as HTMLInputElement).value);
+        });
+
+        const cubeSizeLabel = document.createElement("label");
+        cubeSizeLabel.htmlFor = `cube-${index}-size`;
+        cubeSizeLabel.innerText = `Size`;
+
+        const cubeSizeContainer = document.createElement("div");
+        cubeSizeContainer.id = `cube-${index}-size-container`;
+
+        cubeSizeContainer.appendChild(cubeSizeLabel);
+        cubeSizeContainer.appendChild(cubeSize);
+
+
+        const cubeColor = document.createElement("input");
+        cubeColor.id = `cube-${index}-color`;
+        cubeColor.type = "color";
+        cubeColor.value = vec4ToHex(this._scene.volumes[index].color);
+        cubeColor.style.width = "100%";
+        cubeColor.addEventListener("input", (e) => {
+            this._scene.volumes[index].color = hexToVec4((e.target as HTMLInputElement).value);
+        });
+
+        const cubeColorLabel = document.createElement("label");
+        cubeColorLabel.htmlFor = `cube-${index}-color`;
+        cubeColorLabel.innerText = `Color`;
+
+        const cubeColorContainer = document.createElement("div");
+        cubeColorContainer.id = `cube-${index}-color-container`;
+
+        cubeColorContainer.appendChild(cubeColorLabel);
+        cubeColorContainer.appendChild(cubeColor);
+
+        cubePropertiesContainer.appendChild(cubeSizeContainer);
+        cubePropertiesContainer.appendChild(cubeColorContainer);
+        
+        cubeContainer.appendChild(cubePosContainer);
+        cubeContainer.appendChild(cubePropertiesContainer);
+
+        return cubeContainer;
+    }
+
+    private setUpPosition(index:number, axis: 'X' | 'Y' | 'Z', type: string): HTMLInputElement
+    {
+        const posInput = document.createElement("input");
+        posInput.id = `pos-${type}-${index}-${axis.toLowerCase()}}`;
+        posInput.type = "number";
+        posInput.min = "-10";
+        posInput.max = "10";
+        posInput.step = "0.1";
+        posInput.value = this._scene.volumes[index].position[axis === 'X' ? 0 : axis === 'Y' ? 1 : 2].toString();
+        posInput.style.width = "100%";
         const axisIndex = axis === 'X' ? 0 : axis === 'Y' ? 1 : 2;
-        spherePos.addEventListener("input", (e) => {
+        posInput.addEventListener("input", (e) => {
+            console.log(this._scene.volumes[index].position);
             this._scene.volumes[index].position[axisIndex] = parseFloat((e.target as HTMLInputElement).value);
         });
 
-        return spherePos;
+        return posInput;
     }
 
     public get dom(): HTMLDivElement { return this._dom; }
