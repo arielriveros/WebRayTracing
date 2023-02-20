@@ -4,6 +4,7 @@ import { VolumeObject } from "./volumeObject";
 interface SphereParameters
 {
     position?: vec3,
+    rotation?: vec3,
     radius?: number,
     color?: vec4
 }
@@ -12,9 +13,9 @@ export class Sphere extends VolumeObject
 {
     private _radius: number;
 
-    constructor({position = vec3.fromValues(0, 0, 0), radius = 1, color = vec4.fromValues(1, 1, 1, 1)}: SphereParameters)
+    constructor({position = vec3.create(), rotation = vec3.create(), radius = 1, color = vec4.fromValues(1, 1, 1, 1)}: SphereParameters)
     {
-        super(position, color, 'sphere');
+        super(position, rotation, color, 'sphere');
         this._radius = radius;
     }
 

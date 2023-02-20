@@ -4,6 +4,7 @@ import { VolumeObject } from "./volumeObject";
 interface CubeParameters
 {
     position?: vec3,
+    rotation?: vec3,
     size?: number,
     color?: vec4
 }
@@ -12,9 +13,9 @@ export class Cube extends VolumeObject
 {
     private _size: number;
 
-    constructor({position = vec3.fromValues(0, 0, 0), size = 1, color = vec4.fromValues(1, 1, 1, 1)}: CubeParameters)
+    constructor({position = vec3.create(), rotation = vec3.create(), size = 1, color = vec4.fromValues(1, 1, 1, 1)}: CubeParameters)
     {
-        super(position, color, 'cube');
+        super(position, rotation, color, 'cube');
         this._size = size;
     }
 
@@ -23,18 +24,6 @@ export class Cube extends VolumeObject
 
     public get min(): vec3 { return vec3.fromValues(this.position[0] - this.size / 2, this.position[1] - this.size / 2, this.position[2] - this.size / 2); }
     public get max(): vec3 { return vec3.fromValues(this.position[0] + this.size / 2, this.position[1] + this.size / 2, this.position[2] + this.size / 2); }
-
-    public get normals(): Array<vec3>
-    {
-        return [
-            vec3.fromValues(1, 0, 0),
-            vec3.fromValues(-1, 0, 0),
-            vec3.fromValues(0, 1, 0),
-            vec3.fromValues(0, -1, 0),
-            vec3.fromValues(0, 0, 1),
-            vec3.fromValues(0, 0, -1)
-        ];
-    }
 
     public override getNormalAtPoint(point: vec3): vec3
     {
