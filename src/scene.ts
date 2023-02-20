@@ -36,12 +36,12 @@ export class Scene
     public get backgroundColor(): vec4 { return this._backgroundColor; }
     public set backgroundColor(value: vec4) { this._backgroundColor = value; }
 
-    public addSphere(sphere: Sphere): void
+    public addVolume(volume: VolumeObject): void
     {
-        this._volumes.push(sphere);
+        this._volumes.push(volume);
     }
 
-    public removeSphere(index: number): void
+    public removeVolume(index: number): void
     {
         if(index !== -1)
             this._volumes.splice(index, 1);

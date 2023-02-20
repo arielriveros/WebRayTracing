@@ -145,14 +145,17 @@ export class UserInterface
 
         for(let i = 0; i < this._scene.volumes.length; i++)
         {
-            let sphereContainer = this.setUpSphere(i);
-            spheresContainer.appendChild(sphereContainer);
+            if(this._scene.volumes[i] instanceof Sphere)
+            {
+                let sphereContainer = this.setUpSphere(i);
+                spheresContainer.appendChild(sphereContainer);
+            }
         }
         const addSphereButton = document.createElement("button");
         addSphereButton.id = "add-sphere-button";
         addSphereButton.innerText = "Add Sphere";
         addSphereButton.addEventListener("click", () => {
-            this._scene.addSphere(new Sphere({}));
+            this._scene.addVolume(new Sphere({}));
             this.setUpSpheres();
         });
 
@@ -162,7 +165,7 @@ export class UserInterface
         addRandomSphereButton.id = "add-random-sphere-button";
         addRandomSphereButton.innerText = "Add Random Sphere";
         addRandomSphereButton.addEventListener("click", () => {
-            this._scene.addSphere(new Sphere({
+            this._scene.addVolume(new Sphere({
                 position: vec3.fromValues(
                     Math.random() * 2 - 1,
                     Math.random() * 2 - 1,
@@ -202,7 +205,7 @@ export class UserInterface
         sphereRemoveButton.id = `sphere-${index}-remove-button`;
         sphereRemoveButton.innerText = "Remove";
         sphereRemoveButton.addEventListener("click", () => {
-            this._scene.removeSphere(index);
+            this._scene.removeVolume(index);
             this.setUpSpheres();
         });
 
@@ -235,7 +238,7 @@ export class UserInterface
         sphereRadius.min = "0";
         sphereRadius.max = "1";
         sphereRadius.step = "0.01";
-        sphereRadius.value = (this._scene.volumes[index] as Sphere).radius.toString();
+        sphereRadius.value = (this._scene.volumes[index] as Sphere).radius?.toString();
         sphereRadius.style.width = "100%";
         sphereRadius.addEventListener("input", (e) => {
             (this._scene.volumes[index] as Sphere).radius = parseFloat((e.target as HTMLInputElement).value);
