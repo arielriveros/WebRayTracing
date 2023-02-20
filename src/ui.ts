@@ -45,63 +45,48 @@ export class UserInterface
     {
         const lightDirContainer = document.createElement("div");
         lightDirContainer.id = "light-dir-container";
-        lightDirContainer.style.position = "relative";
         lightDirContainer.style.border = "1px solid black";
 
         const lightDirLabel = document.createElement("label");
         lightDirLabel.htmlFor = "lightDir";
         lightDirLabel.innerText = "Light Direction";
-        lightDirLabel.style.top = "0px";
-        lightDirLabel.style.left = "0px";
-        lightDirLabel.style.width = "100%";
-        lightDirLabel.style.textAlign = "center";
-        lightDirLabel.style.color = "white";
-        lightDirLabel.style.fontFamily = "sans-serif";
-        lightDirLabel.style.fontSize = "12px";
-        lightDirLabel.style.fontWeight = "bold";
-        lightDirLabel.style.textShadow = "0px 0px 1px black";
         
         lightDirContainer.appendChild(lightDirLabel);
 
-        const lightDirX = document.createElement("input");
-        lightDirX.id = "lightDirX";
-        lightDirX.type = "range";
-        lightDirX.min = "-1";
-        lightDirX.max = "1";
-        lightDirX.step = "0.01";
-        lightDirX.value = "0";
-        lightDirX.style.width = "100%";
-        lightDirX.addEventListener("input", (e) => {
-            this._scene.lightDir[0] = parseFloat((e.target as HTMLInputElement).value);
+        const breakLine = document.createElement("br");
+        lightDirContainer.appendChild(breakLine);
+
+        const lightDirXRotation = document.createElement("input");
+        lightDirXRotation.id = "lightDirXRotation";
+        lightDirXRotation.type = "range";
+        lightDirXRotation.min = "-180";
+        lightDirXRotation.max = "180";
+        lightDirXRotation.value = "0";
+        lightDirXRotation.addEventListener("input", (e) => {
+            this._scene.lightDir = vec3.fromValues(
+                Math.sin((e.target as HTMLInputElement).valueAsNumber * Math.PI / 180),
+                Math.cos((e.target as HTMLInputElement).valueAsNumber * Math.PI / 180),
+                0
+            );
         });
 
-        const lightDirY = document.createElement("input");
-        lightDirY.id = "lightDirY";
-        lightDirY.type = "range";
-        lightDirY.min = "-1";
-        lightDirY.max = "1";
-        lightDirY.step = "0.01";
-        lightDirY.value = "0";
-        lightDirY.style.width = "100%";
-        lightDirY.addEventListener("input", (e) => {
-            this._scene.lightDir[1] = parseFloat((e.target as HTMLInputElement).value);
-        });
-        
-        const lightDirZ = document.createElement("input");
-        lightDirZ.id = "lightDirZ";
-        lightDirZ.type = "range";
-        lightDirZ.min = "-1";
-        lightDirZ.max = "1";
-        lightDirZ.step = "0.01";
-        lightDirZ.value = "1";
-        lightDirZ.style.width = "100%";
-        lightDirZ.addEventListener("input", (e) => {
-            this._scene.lightDir[2] = parseFloat((e.target as HTMLInputElement).value);
+
+        const lightDirYRotation = document.createElement("input");
+        lightDirYRotation.id = "lightDirYRotation";
+        lightDirYRotation.type = "range";
+        lightDirYRotation.min = "-180";
+        lightDirYRotation.max = "180";
+        lightDirYRotation.value = "0";
+        lightDirYRotation.addEventListener("input", (e) => {
+            this._scene.lightDir = vec3.fromValues(
+                Math.sin((e.target as HTMLInputElement).valueAsNumber * Math.PI / 180),
+                0,
+                Math.cos((e.target as HTMLInputElement).valueAsNumber * Math.PI / 180)
+            );
         });
 
-        lightDirContainer.appendChild(lightDirX);
-        lightDirContainer.appendChild(lightDirY);
-        lightDirContainer.appendChild(lightDirZ);
+        lightDirContainer.appendChild(lightDirXRotation);
+        lightDirContainer.appendChild(lightDirYRotation);
 
         this._dom.appendChild(lightDirContainer);
     }
@@ -173,9 +158,30 @@ export class UserInterface
 
         spheresContainer.appendChild(addSphereButton);
 
-        this._dom.appendChild(spheresContainer);
+        const addRandomSphereButton = document.createElement("button");
+        addRandomSphereButton.id = "add-random-sphere-button";
+        addRandomSphereButton.innerText = "Add Random Sphere";
+        addRandomSphereButton.addEventListener("click", () => {
+            this._scene.addSphere(new Sphere({
+                position: vec3.fromValues(
+                    Math.random() * 2 - 1,
+                    Math.random() * 2 - 1,
+                    Math.random() * 2 - 1
+                ),
+                radius: Math.random() * 0.5 + 0.5,
+                color: vec4.fromValues(
+                    Math.random(),
+                    Math.random(),
+                    Math.random(),
+                    1
+                )
+            }));
+            this.setUpSpheres();
+        });
 
-        
+        spheresContainer.appendChild(addRandomSphereButton);
+
+        this._dom.appendChild(spheresContainer);
     }
 
     private setUpSphere(index: number): HTMLDivElement
