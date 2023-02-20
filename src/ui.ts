@@ -1,6 +1,7 @@
 import { vec3, vec4 } from "gl-matrix";
 import { hexToVec4, vec4ToHex } from "./utils";
 import { Scene } from "./scene";
+import { Sphere } from "./sphere";
 
 export class UserInterface
 {
@@ -44,64 +45,48 @@ export class UserInterface
     {
         const lightDirContainer = document.createElement("div");
         lightDirContainer.id = "light-dir-container";
-        lightDirContainer.style.position = "relative";
         lightDirContainer.style.border = "1px solid black";
 
         const lightDirLabel = document.createElement("label");
         lightDirLabel.htmlFor = "lightDir";
         lightDirLabel.innerText = "Light Direction";
-        lightDirLabel.style.position = "relative";
-        lightDirLabel.style.top = "0px";
-        lightDirLabel.style.left = "0px";
-        lightDirLabel.style.width = "100%";
-        lightDirLabel.style.textAlign = "center";
-        lightDirLabel.style.color = "white";
-        lightDirLabel.style.fontFamily = "sans-serif";
-        lightDirLabel.style.fontSize = "12px";
-        lightDirLabel.style.fontWeight = "bold";
-        lightDirLabel.style.textShadow = "0px 0px 1px black";
         
         lightDirContainer.appendChild(lightDirLabel);
 
-        const lightDirX = document.createElement("input");
-        lightDirX.id = "lightDirX";
-        lightDirX.type = "range";
-        lightDirX.min = "-1";
-        lightDirX.max = "1";
-        lightDirX.step = "0.01";
-        lightDirX.value = "0";
-        lightDirX.style.width = "100%";
-        lightDirX.addEventListener("input", (e) => {
-            this._scene.lightDir[0] = parseFloat((e.target as HTMLInputElement).value);
+        const breakLine = document.createElement("br");
+        lightDirContainer.appendChild(breakLine);
+
+        const lightDirXRotation = document.createElement("input");
+        lightDirXRotation.id = "lightDirXRotation";
+        lightDirXRotation.type = "range";
+        lightDirXRotation.min = "-180";
+        lightDirXRotation.max = "180";
+        lightDirXRotation.value = "0";
+        lightDirXRotation.addEventListener("input", (e) => {
+            this._scene.lightDir = vec3.fromValues(
+                Math.sin((e.target as HTMLInputElement).valueAsNumber * Math.PI / 180),
+                Math.cos((e.target as HTMLInputElement).valueAsNumber * Math.PI / 180),
+                0
+            );
         });
 
-        const lightDirY = document.createElement("input");
-        lightDirY.id = "lightDirY";
-        lightDirY.type = "range";
-        lightDirY.min = "-1";
-        lightDirY.max = "1";
-        lightDirY.step = "0.01";
-        lightDirY.value = "0";
-        lightDirY.style.width = "100%";
-        lightDirY.addEventListener("input", (e) => {
-            this._scene.lightDir[1] = parseFloat((e.target as HTMLInputElement).value);
-        });
-        
-        const lightDirZ = document.createElement("input");
-        lightDirZ.id = "lightDirZ";
-        lightDirZ.type = "range";
-        lightDirZ.min = "-1";
-        lightDirZ.max = "1";
-        lightDirZ.step = "0.01";
-        lightDirZ.value = "1";
-        lightDirZ.style.width = "100%";
-        lightDirZ.addEventListener("input", (e) => {
-            this._scene.lightDir[2] = parseFloat((e.target as HTMLInputElement).value);
+
+        const lightDirYRotation = document.createElement("input");
+        lightDirYRotation.id = "lightDirYRotation";
+        lightDirYRotation.type = "range";
+        lightDirYRotation.min = "-180";
+        lightDirYRotation.max = "180";
+        lightDirYRotation.value = "0";
+        lightDirYRotation.addEventListener("input", (e) => {
+            this._scene.lightDir = vec3.fromValues(
+                Math.sin((e.target as HTMLInputElement).valueAsNumber * Math.PI / 180),
+                0,
+                Math.cos((e.target as HTMLInputElement).valueAsNumber * Math.PI / 180)
+            );
         });
 
-        lightDirContainer.appendChild(lightDirX);
-        lightDirContainer.appendChild(lightDirY);
-        lightDirContainer.appendChild(lightDirZ);
+        lightDirContainer.appendChild(lightDirXRotation);
+        lightDirContainer.appendChild(lightDirYRotation);
 
         this._dom.appendChild(lightDirContainer);
     }
@@ -146,70 +131,103 @@ export class UserInterface
 
     private setUpSpheres(): void
     {
+        if(document.getElementById("spheres-container") != null)
+        {
+            document.getElementById("spheres-container")?.remove();
+        }
+        const spheresContainer = document.createElement("div");
+        spheresContainer.id = "spheres-container";
+
+        const spheresLabel = document.createElement("label");
+        spheresLabel.htmlFor = "spheres";
+        spheresLabel.innerText = "Spheres";
+        spheresContainer.appendChild(spheresLabel);
+
         for(let i = 0; i < this._scene.spheres.length; i++)
         {
-            this.setUpSphere(i);
+            let sphereContainer = this.setUpSphere(i);
+            spheresContainer.appendChild(sphereContainer);
         }
+        const addSphereButton = document.createElement("button");
+        addSphereButton.id = "add-sphere-button";
+        addSphereButton.innerText = "Add Sphere";
+        addSphereButton.addEventListener("click", () => {
+            this._scene.addSphere(new Sphere({}));
+            this.setUpSpheres();
+        });
+
+        spheresContainer.appendChild(addSphereButton);
+
+        const addRandomSphereButton = document.createElement("button");
+        addRandomSphereButton.id = "add-random-sphere-button";
+        addRandomSphereButton.innerText = "Add Random Sphere";
+        addRandomSphereButton.addEventListener("click", () => {
+            this._scene.addSphere(new Sphere({
+                position: vec3.fromValues(
+                    Math.random() * 2 - 1,
+                    Math.random() * 2 - 1,
+                    Math.random() * 2 - 1
+                ),
+                radius: Math.random() * 0.5 + 0.5,
+                color: vec4.fromValues(
+                    Math.random(),
+                    Math.random(),
+                    Math.random(),
+                    1
+                )
+            }));
+            this.setUpSpheres();
+        });
+
+        spheresContainer.appendChild(addRandomSphereButton);
+
+        this._dom.appendChild(spheresContainer);
     }
 
-    private setUpSphere(index: number): void
+    private setUpSphere(index: number): HTMLDivElement
     {
         const sphereContainer = document.createElement("div");
         sphereContainer.id = `sphere-${index}-container`;
         sphereContainer.style.position = "relative";
         sphereContainer.style.border = "1px solid black";
+        sphereContainer.style.padding = "5px";
 
         const sphereLabel = document.createElement("label");
         sphereLabel.htmlFor = `sphere-${index}`;
         sphereLabel.innerText = `Sphere ${index}`;
-        sphereLabel.style.position = "relative";
-        sphereLabel.style.top = "0px";
-        sphereLabel.style.left = "0px";
-        sphereLabel.style.width = "100%";
-        sphereLabel.style.textAlign = "center";
-        sphereLabel.style.color = "white";
-        sphereLabel.style.fontFamily = "sans-serif";
-        sphereLabel.style.fontSize = "12px";
-        sphereLabel.style.fontWeight = "bold";
-        sphereLabel.style.textShadow = "0px 0px 1px black";
 
         sphereContainer.appendChild(sphereLabel);
 
-        const sphereX = document.createElement("input");
-        sphereX.id = `sphere-${index}-x`;
-        sphereX.type = "range";
-        sphereX.min = "-1";
-        sphereX.max = "1";
-        sphereX.step = "0.01";
-        sphereX.value = "0";
-        sphereX.style.width = "100%";
-        sphereX.addEventListener("input", (e) => {
-            this._scene.spheres[index].position[0] = parseFloat((e.target as HTMLInputElement).value);
+        const sphereRemoveButton = document.createElement("button");
+        sphereRemoveButton.id = `sphere-${index}-remove-button`;
+        sphereRemoveButton.innerText = "Remove";
+        sphereRemoveButton.addEventListener("click", () => {
+            this._scene.removeSphere(index);
+            this.setUpSpheres();
         });
 
-        const sphereY = document.createElement("input");
-        sphereY.id = `sphere-${index}-y`;
-        sphereY.type = "range";
-        sphereY.min = "-1";
-        sphereY.max = "1";
-        sphereY.step = "0.01";
-        sphereY.value = "0";
-        sphereY.style.width = "100%";
-        sphereY.addEventListener("input", (e) => {
-            this._scene.spheres[index].position[1] = parseFloat((e.target as HTMLInputElement).value);
-        });
+        sphereContainer.appendChild(sphereRemoveButton);
 
-        const sphereZ = document.createElement("input");
-        sphereZ.id = `sphere-${index}-z`;
-        sphereZ.type = "range";
-        sphereZ.min = "-1";
-        sphereZ.max = "1";
-        sphereZ.step = "0.01";
-        sphereZ.value = "0";
-        sphereZ.style.width = "100%";
-        sphereZ.addEventListener("input", (e) => {
-            this._scene.spheres[index].position[2] = parseFloat((e.target as HTMLInputElement).value);
-        });
+        const spherePosContainer = document.createElement("div");
+        spherePosContainer.id = `sphere-${index}-pos-container`;
+        spherePosContainer.style.display = "flex";
+
+        const spherePosLabel = document.createElement("label");
+        spherePosLabel.htmlFor = `sphere-${index}-pos`;
+        spherePosLabel.innerText = `Position`;
+
+        spherePosContainer.appendChild(spherePosLabel);
+        const sphereX = this.setUpSpherePosition(index, 'X');
+        const sphereY = this.setUpSpherePosition(index, 'Y');
+        const sphereZ = this.setUpSpherePosition(index, 'Z');
+
+        spherePosContainer.appendChild(sphereX);
+        spherePosContainer.appendChild(sphereY);
+        spherePosContainer.appendChild(sphereZ);
+
+        const spherePropertiesContainer = document.createElement("div");
+        spherePropertiesContainer.id = `sphere-${index}-properties-container`;
+        spherePropertiesContainer.style.display = "flex";
 
         const sphereRadius = document.createElement("input");
         sphereRadius.id = `sphere-${index}-radius`;
@@ -217,29 +235,67 @@ export class UserInterface
         sphereRadius.min = "0";
         sphereRadius.max = "1";
         sphereRadius.step = "0.01";
-        sphereRadius.value = "0.5";
+        sphereRadius.value = this._scene.spheres[index].radius.toString();
         sphereRadius.style.width = "100%";
         sphereRadius.addEventListener("input", (e) => {
             this._scene.spheres[index].radius = parseFloat((e.target as HTMLInputElement).value);
         });
 
+        const sphereRadiusLabel = document.createElement("label");
+        sphereRadiusLabel.htmlFor = `sphere-${index}-radius`;
+        sphereRadiusLabel.innerText = `Radius`;
+
+        const sphereRadiusContainer = document.createElement("div");
+        sphereRadiusContainer.id = `sphere-${index}-radius-container`;
+
+        sphereRadiusContainer.appendChild(sphereRadiusLabel);
+        sphereRadiusContainer.appendChild(sphereRadius);
+
+
         const sphereColor = document.createElement("input");
         sphereColor.id = `sphere-${index}-color`;
         sphereColor.type = "color";
         sphereColor.value = vec4ToHex(this._scene.spheres[index].color);
-        console.log(vec4ToHex(this._scene.spheres[index].color));
         sphereColor.style.width = "100%";
         sphereColor.addEventListener("input", (e) => {
             this._scene.spheres[index].color = hexToVec4((e.target as HTMLInputElement).value);
         });
 
-        sphereContainer.appendChild(sphereX);
-        sphereContainer.appendChild(sphereY);
-        sphereContainer.appendChild(sphereZ);
-        sphereContainer.appendChild(sphereRadius);
-        sphereContainer.appendChild(sphereColor);
+        const sphereColorLabel = document.createElement("label");
+        sphereColorLabel.htmlFor = `sphere-${index}-color`;
+        sphereColorLabel.innerText = `Color`;
 
-        this._dom.appendChild(sphereContainer);
+        const sphereColorContainer = document.createElement("div");
+        sphereColorContainer.id = `sphere-${index}-color-container`;
+
+        sphereColorContainer.appendChild(sphereColorLabel);
+        sphereColorContainer.appendChild(sphereColor);
+
+        spherePropertiesContainer.appendChild(sphereRadiusContainer);
+        spherePropertiesContainer.appendChild(sphereColorContainer);
+        
+        sphereContainer.appendChild(spherePosContainer);
+        sphereContainer.appendChild(spherePropertiesContainer);
+
+        return sphereContainer;
+    }
+
+    private setUpSpherePosition(index:number, axis: 'X' | 'Y' | 'Z'): HTMLInputElement
+    {
+        const spherePos = document.createElement("input");
+        spherePos.id = `sphere-${index}-${axis.toLowerCase()}}`;
+        spherePos.type = "number";
+        spherePos.min = "-10";
+        spherePos.max = "10";
+        spherePos.step = "0.1";
+        spherePos.value = this._scene.spheres[index].position[axis === 'X' ? 0 : axis === 'Y' ? 1 : 2].toString();
+        spherePos.style.width = "100%";
+        const axisIndex = axis === 'X' ? 0 : axis === 'Y' ? 1 : 2;
+        spherePos.addEventListener("input", (e) => {
+            this._scene.spheres[index].position[axisIndex] = parseFloat((e.target as HTMLInputElement).value);
+        });
+
+        return spherePos;
     }
 
     public get dom(): HTMLDivElement { return this._dom; }

@@ -39,4 +39,10 @@ export class Scene
     {
         this._spheres.push(sphere);
     }
+
+    public removeSphere(index: number): void
+    {
+        if(index !== -1)
+            this._spheres.splice(index, 1);
+    }
 }
