@@ -87,13 +87,14 @@ export class Render
         let origin: vec3 = vec3.create();
         for(let volume of scene.volumes)
         {
+            origin = vec3.create();
+            vec3.add(origin, ray.origin, volume.position);
             switch(volume.type)
             {
                 case 'sphere':
                     let sphere = volume as Sphere;
 
-                    origin = vec3.create();
-                    vec3.add(origin, ray.origin, volume.position);
+                    
 
                     let a: number = vec3.dot(ray.direction, ray.direction);
                     let b: number = 2.0 * vec3.dot(origin, ray.direction);
@@ -113,9 +114,6 @@ export class Render
 
                 case 'cube':
                     let cube = volume as Cube;
-
-                    origin = vec3.create();
-                    vec3.add(origin, ray.origin, volume.position);
 
                     let tmin: number = (cube.min[0] - origin[0]) / ray.direction[0];
                     let tmax: number = (cube.max[0] - origin[0]) / ray.direction[0];

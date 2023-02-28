@@ -35,8 +35,8 @@ export class Cube extends VolumeObject
     public get min(): vec3 { return this._min; }
     public get max(): vec3 { return this._max; }
 
-    public calcMin(): vec3 { return vec3.add(vec3.create(), this.position, vec3.fromValues(-this.size, -this.size, -this.size)); }
-    public calcMax(): vec3 { return vec3.add(vec3.create(), this.position, vec3.fromValues(this.size, this.size, this.size)); }
+    public calcMin(): vec3 { return vec3.add(vec3.create(), this.position, vec3.fromValues(-this._size, -this._size, -this._size)); }
+    public calcMax(): vec3 { return vec3.add(vec3.create(), this.position, vec3.fromValues(this._size, this._size, this._size)); }
 
 
     public override getNormalAtPoint(point: vec3): vec3
