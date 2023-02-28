@@ -41,10 +41,23 @@ export class Application
         // Move position on mouse move and clicking
         this._renderer.renderTarget.addEventListener("mousemove", (e) => {
             if(!this._camera) return;
+
+            
             if(e.buttons === 1)
             {
-                this._camera.position[0] = e.clientX / this._camera.width * 2 - 1;
-                this._camera.position[1] = -e.clientY / this._camera.height * 2 + 1;
+                this._camera.moveForward(-e.movementY / 100);
+                this._camera.moveRight(e.movementX / 100);
+            }
+
+            if(e.buttons === 2)
+            {
+                this._camera.rotateY(-e.movementX / 500);
+            }
+
+            if(e.buttons === 3)
+            {
+                this._camera.moveUp(e.movementY / 100);
+                this._camera.moveRight(e.movementX / 100);
             }
         });     
         

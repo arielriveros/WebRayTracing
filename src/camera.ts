@@ -3,6 +3,7 @@ import { mat4, vec2, vec3, vec4 } from "gl-matrix";
 interface CameraParameters
 {
     position?: vec3,
+    rotation?: vec3,
     fov?: number,
     near?: number,
     far?: number
@@ -13,6 +14,7 @@ export class Camera
     private _height!: number;
     private _width!: number;
     private _position: vec3;
+    private _rotation: vec3;
     private _fov: number;
     private _near: number;
     private _far: number;
@@ -25,9 +27,10 @@ export class Camera
 
     private _rayDirections!: vec3[];
 
-    constructor({position = vec3.fromValues(0, 0, -2), fov = 45, near = 0.1, far = 100}: CameraParameters)
+    constructor({position = vec3.fromValues(0, 0, -2), rotation = vec3.fromValues(0, 0, 0), fov = 45, near = 0.1, far = 100}: CameraParameters)
     {
         this._position = position;
+        this._rotation = rotation;
         this._fov = fov;
         this._near = near;
         this._far = far;
@@ -40,6 +43,7 @@ export class Camera
         this.calculateProjection();
         this.calculateView();
         this.calculateRayDirections();
+        mat4.lookAt(this._view, this._position, vec3.add(vec3.create(), this._position, this._forward), vec3.fromValues(0, 1, 0) );
     }
 
     public calculateProjection()
@@ -52,6 +56,29 @@ export class Camera
     {
         mat4.lookAt(this._view, this._position, vec3.add(vec3.create(), this._position, this._forward), vec3.fromValues(0, 1, 0) );
         mat4.invert(this._inverseView, this._view);
+    }
+
+    public moveForward(distance: number): void
+    {
+        this._position = vec3.add(this._position, this._position, vec3.scale(vec3.create(), this._forward, distance));
+    }
+
+    public moveRight(distance: number): void
+    {
+        const right: vec3 = vec3.cross(vec3.create(), this._forward, vec3.fromValues(0, 1, 0));
+        this._position = vec3.add(this._position, this._position, vec3.scale(vec3.create(), right, distance));
+    }
+
+    public moveUp(distance: number): void
+    {
+        this._position = vec3.add(this._position, this._position, vec3.scale(vec3.create(), vec3.fromValues(0, 1, 0), distance));
+    }
+
+    public rotateY(rate: number): void
+    {
+        this._rotation[1] += rate;
+        this._forward = vec3.fromValues(Math.sin(this._rotation[1]), 0, Math.cos(this._rotation[1]));
+        this.update();
     }
 
     public calculateRayDirections(): void
@@ -78,7 +105,7 @@ export class Camera
 
     public get rayDirections(): vec3[] { return this._rayDirections; }
     public get position(): vec3 { return this._position; }
-
+    public get rotation(): vec3 { return this._rotation; }
     public get height(): number { return this._height; }
     public get width(): number { return this._width; }
 
