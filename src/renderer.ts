@@ -84,6 +84,7 @@ export class Render
         let closestVolume: VolumeObject | null = null;
         let hitDistance: number = Number.MAX_VALUE;
 
+        let origin: vec3 = vec3.create();
         for(let volume of scene.volumes)
         {
             switch(volume.type)
@@ -91,7 +92,7 @@ export class Render
                 case 'sphere':
                     let sphere = volume as Sphere;
 
-                    let origin: vec3 = vec3.create();
+                    origin = vec3.create();
                     vec3.add(origin, ray.origin, volume.position);
 
                     let a: number = vec3.dot(ray.direction, ray.direction);
@@ -113,19 +114,21 @@ export class Render
                 case 'cube':
                     let cube = volume as Cube;
 
-                    let tmin: number = (cube.min[0] + ray.origin[0]) / ray.direction[0];
-                    let tmax: number = (cube.max[0] + ray.origin[0]) / ray.direction[0];
-                    let tymin: number = (cube.min[1] + ray.origin[1]) / ray.direction[1];
-                    let tymax: number = (cube.max[1] + ray.origin[1]) / ray.direction[1];
-                    let tzmin: number = (cube.min[2] + ray.origin[2]) / ray.direction[2];
-                    let tzmax: number = (cube.max[2] + ray.origin[2]) / ray.direction[2];
+                    origin = vec3.create();
+                    vec3.add(origin, ray.origin, volume.position);
+
+                    let tmin: number = (cube.min[0] - origin[0]) / ray.direction[0];
+                    let tmax: number = (cube.max[0] - origin[0]) / ray.direction[0];
 
                     if(tmin > tmax)
                     {
                         let temp: number = tmin;
                         tmin = tmax;
-                        tmax = temp;
+                        tmax = temp;                        
                     }
+
+                    let tymin: number = (cube.min[1] - origin[1]) / ray.direction[1];
+                    let tymax: number = (cube.max[1] - origin[1]) / ray.direction[1];
 
                     if(tymin > tymax)
                     {
@@ -134,11 +137,17 @@ export class Render
                         tymax = temp;
                     }
 
+                    if((tmin > tymax) || (tymin > tmax))
+                        continue;
+
                     if(tymin > tmin)
                         tmin = tymin;
-
+                    
                     if(tymax < tmax)
                         tmax = tymax;
+
+                    let tzmin: number = (cube.min[2] - origin[2]) / ray.direction[2];
+                    let tzmax: number = (cube.max[2] - origin[2]) / ray.direction[2];
 
                     if(tzmin > tzmax)
                     {
@@ -147,20 +156,21 @@ export class Render
                         tzmax = temp;
                     }
 
-                    if(tzmin > tmin)
-                    tmin = tzmin;
-                    
-                    if(tzmax < tmax)
-                    tmax = tzmax;
-                    
-                    if((tmin > tzmax) || (tzmin > tmax) || (tmin > tymax) || (tymin > tmax))
+                    if((tmin > tzmax) || (tzmin > tmax))
                         continue;
 
+                    if(tzmin > tmin)
+                        tmin = tzmin;
+
+                    if(tzmax < tmax)
+                        tmax = tzmax;
+
                     if(tmin < hitDistance)
-                    {
+                    {   
                         hitDistance = tmin;
                         closestVolume = cube as Cube;
                     }
+                    
                     break;
 
                 default:
@@ -171,7 +181,7 @@ export class Render
         if(closestVolume == null)
             return scene.backgroundColor;
 
-        let origin: vec3 = vec3.create();
+        origin = vec3.create();
         vec3.add(origin, ray.origin, closestVolume.position);
         let hit: vec3 = vec3.scaleAndAdd(vec3.create(), origin, ray.direction, hitDistance);
 
