@@ -1,5 +1,5 @@
 import { vec3, vec4 } from "gl-matrix";
-import { VolumeObject } from "./volumeObject";
+import { RenderObject } from "../renderObject";
 
 interface CubeParameters
 {
@@ -9,7 +9,7 @@ interface CubeParameters
     color?: vec4
 }
 
-export class Cube extends VolumeObject
+export class Cube extends RenderObject
 {
     private _size: number;
     private _min: vec3;

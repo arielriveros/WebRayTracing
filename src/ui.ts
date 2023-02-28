@@ -1,8 +1,9 @@
 import { vec3, vec4 } from "gl-matrix";
 import { hexToVec4, vec4ToHex } from "./utils";
 import { Scene } from "./scene";
-import { Sphere } from "./objects/sphere";
-import { Cube } from "./objects/cube";
+import { Sphere } from "./objects/volumes/sphere";
+import { Cube } from "./objects/volumes/cube";
+import { Plane } from "./objects/planes/plane";
 
 export class UserInterface
 {
@@ -39,7 +40,7 @@ export class UserInterface
     {
         this.setUpDirectionalLight();
         this.setUpBackgroundColor();
-        this.setUpVolumes();
+        this.setUpObjects();
     }
 
     private setUpDirectionalLight(): void
@@ -130,50 +131,61 @@ export class UserInterface
 
     }
 
-    private setUpVolumes(): void
+    private setUpObjects(): void
     {
-        if(document.getElementById("volumes-container") != null)
-            document.getElementById("volumes-container")?.remove();
+        if(document.getElementById("objects-container") != null)
+            document.getElementById("objects-container")?.remove();
 
-        const volumesContainer = document.createElement("div");
-        volumesContainer.id = "volumes-container";
+        const objectsContainer = document.createElement("div");
+        objectsContainer.id = "objects-container";
 
-        const volumesLabel = document.createElement("label");
-        volumesLabel.htmlFor = "volumes";
-        volumesLabel.innerText = "Volumes";
-        volumesContainer.appendChild(volumesLabel);
+        const objectsLabel = document.createElement("label");
+        objectsLabel.htmlFor = "objects";
+        objectsLabel.innerText = "Objects";
+        objectsContainer.appendChild(objectsLabel);
 
-        for(let i = 0; i < this._scene.volumes.length; i++)
+        for(let i = 0; i < this._scene.objects.length; i++)
         {
-            switch(this._scene.volumes[i].type)
+            switch(this._scene.objects[i].type)
             {
                 case "sphere":
                     let sphereContainer = this.setUpSphere(i);
-                    volumesContainer.appendChild(sphereContainer);
+                    objectsContainer.appendChild(sphereContainer);
                     break;
                 case "cube":
                     let cubeContainer = this.setUpCube(i);
-                    volumesContainer.appendChild(cubeContainer);
+                    objectsContainer.appendChild(cubeContainer);
+                    break;
+                case "plane":
+                    let planeContainer = this.setUpPlane(i);
+                    objectsContainer.appendChild(planeContainer);
+                    break;
                 default:
                     break;
             }
         }
 
+        this.setupAddButtons(objectsContainer);
+        
+    }
+
+    private setupAddButtons(objectsContainer: HTMLDivElement ): void
+    {
         const addSphereButton = document.createElement("button");
         addSphereButton.id = "add-sphere-button";
         addSphereButton.innerText = "Add Sphere";
         addSphereButton.addEventListener("click", () => {
-            this._scene.addVolume(new Sphere({radius: 0.25}));
-            this.setUpVolumes();
+            this._scene.addObject(new Sphere({radius: 0.25}));
+            this.setUpObjects();
         });
 
-        volumesContainer.appendChild(addSphereButton);
+        objectsContainer.appendChild(addSphereButton);
 
         const addRandomSphereButton = document.createElement("button");
         addRandomSphereButton.id = "add-random-sphere-button";
         addRandomSphereButton.innerText = "Add Random Sphere";
         addRandomSphereButton.addEventListener("click", () => {
-            this._scene.addVolume(new Sphere({
+            this._scene.addObject(new Sphere({
                 position: vec3.fromValues(
                     Math.random() * 2 - 1,
                     Math.random() * 2 - 1,
@@ -187,26 +199,26 @@ export class UserInterface
                     1
                 )
             }));
-            this.setUpVolumes();
+            this.setUpObjects();
         });
 
-        volumesContainer.appendChild(addRandomSphereButton);
+        objectsContainer.appendChild(addRandomSphereButton);
 
         const addCubeButton = document.createElement("button");
         addCubeButton.id = "add-cube-button";
         addCubeButton.innerText = "Add Cube";
         addCubeButton.addEventListener("click", () => {
-            this._scene.addVolume(new Cube({size: 0.25}));
-            this.setUpVolumes();
+            this._scene.addObject(new Cube({size: 0.25}));
+            this.setUpObjects();
         });
 
-        volumesContainer.appendChild(addCubeButton);
+        objectsContainer.appendChild(addCubeButton);
 
         const addRandomCubeButton = document.createElement("button");
         addRandomCubeButton.id = "add-random-cube-button";
         addRandomCubeButton.innerText = "Add Random Cube";
         addRandomCubeButton.addEventListener("click", () => {
-            this._scene.addVolume(new Cube({
+            this._scene.addObject(new Cube({
                 position: vec3.fromValues(
                     Math.random() * 2 - 1,
                     Math.random() * 2 - 1,
@@ -220,12 +232,12 @@ export class UserInterface
                     1
                 )
             }));
-            this.setUpVolumes();
+            this.setUpObjects();
         });
 
-        volumesContainer.appendChild(addRandomCubeButton);
+        objectsContainer.appendChild(addRandomCubeButton);
 
-        this._dom.appendChild(volumesContainer);
+        this._dom.appendChild(objectsContainer);
     }
 
     private setUpSphere(index: number): HTMLDivElement
@@ -246,8 +258,8 @@ export class UserInterface
         sphereRemoveButton.id = `sphere-${index}-remove-button`;
         sphereRemoveButton.innerText = "Remove";
         sphereRemoveButton.addEventListener("click", () => {
-            this._scene.removeVolume(index);
-            this.setUpVolumes();
+            this._scene.removeObject(index);
+            this.setUpObjects();
         });
 
         sphereContainer.appendChild(sphereRemoveButton);
@@ -279,10 +291,10 @@ export class UserInterface
         sphereRadius.min = "0";
         sphereRadius.max = "1";
         sphereRadius.step = "0.01";
-        sphereRadius.value = (this._scene.volumes[index] as Sphere).radius?.toString();
+        sphereRadius.value = (this._scene.objects[index] as Sphere).radius?.toString();
         sphereRadius.style.width = "100%";
         sphereRadius.addEventListener("input", (e) => {
-            (this._scene.volumes[index] as Sphere).radius = parseFloat((e.target as HTMLInputElement).value);
+            (this._scene.objects[index] as Sphere).radius = parseFloat((e.target as HTMLInputElement).value);
         });
 
         const sphereRadiusLabel = document.createElement("label");
@@ -299,10 +311,10 @@ export class UserInterface
         const sphereColor = document.createElement("input");
         sphereColor.id = `sphere-${index}-color`;
         sphereColor.type = "color";
-        sphereColor.value = vec4ToHex(this._scene.volumes[index].color);
+        sphereColor.value = vec4ToHex(this._scene.objects[index].color);
         sphereColor.style.width = "100%";
         sphereColor.addEventListener("input", (e) => {
-            this._scene.volumes[index].color = hexToVec4((e.target as HTMLInputElement).value);
+            this._scene.objects[index].color = hexToVec4((e.target as HTMLInputElement).value);
         });
 
         const sphereColorLabel = document.createElement("label");
@@ -342,8 +354,8 @@ export class UserInterface
         cubeRemoveButton.id = `cube-${index}-remove-button`;
         cubeRemoveButton.innerText = "Remove";
         cubeRemoveButton.addEventListener("click", () => {
-            this._scene.removeVolume(index);
-            this.setUpVolumes();
+            this._scene.removeObject(index);
+            this.setUpObjects();
         });
 
         cubeContainer.appendChild(cubeRemoveButton);
@@ -375,11 +387,11 @@ export class UserInterface
         cubeSize.min = "0";
         cubeSize.max = "1";
         cubeSize.step = "0.01";
-        cubeSize.value = (this._scene.volumes[index] as Cube).size?.toString();
+        cubeSize.value = (this._scene.objects[index] as Cube).size?.toString();
         cubeSize.style.width = "100%";
         cubeSize.addEventListener("input", (e) => {
-            console.log(this._scene.volumes[index]);
-            (this._scene.volumes[index] as Cube).size = parseFloat((e.target as HTMLInputElement).value);
+            console.log(this._scene.objects[index]);
+            (this._scene.objects[index] as Cube).size = parseFloat((e.target as HTMLInputElement).value);
         });
 
         const cubeSizeLabel = document.createElement("label");
@@ -396,10 +408,10 @@ export class UserInterface
         const cubeColor = document.createElement("input");
         cubeColor.id = `cube-${index}-color`;
         cubeColor.type = "color";
-        cubeColor.value = vec4ToHex(this._scene.volumes[index].color);
+        cubeColor.value = vec4ToHex(this._scene.objects[index].color);
         cubeColor.style.width = "100%";
         cubeColor.addEventListener("input", (e) => {
-            this._scene.volumes[index].color = hexToVec4((e.target as HTMLInputElement).value);
+            this._scene.objects[index].color = hexToVec4((e.target as HTMLInputElement).value);
         });
 
         const cubeColorLabel = document.createElement("label");
@@ -421,6 +433,101 @@ export class UserInterface
         return cubeContainer;
     }
 
+    private setUpPlane(index: number): HTMLDivElement
+    {
+        const planeContainer = document.createElement("div");
+        planeContainer.id = `plane-${index}-container`;
+        planeContainer.style.position = "relative";
+        planeContainer.style.border = "1px solid black";
+        planeContainer.style.padding = "5px";
+
+        const planeLabel = document.createElement("label");
+        planeLabel.htmlFor = `plane-${index}`;
+        planeLabel.innerText = `plane ${index}`;
+
+        planeContainer.appendChild(planeLabel);
+
+        const planeRemoveButton = document.createElement("button");
+        planeRemoveButton.id = `plane-${index}-remove-button`;
+        planeRemoveButton.innerText = "Remove";
+        planeRemoveButton.addEventListener("click", () => {
+            this._scene.removeObject(index);
+            this.setUpObjects();
+        });
+
+        planeContainer.appendChild(planeRemoveButton);
+
+        const planePosContainer = document.createElement("div");
+        planePosContainer.id = `plane-${index}-pos-container`;
+        planePosContainer.style.display = "flex";
+
+        const planePosLabel = document.createElement("label");
+        planePosLabel.htmlFor = `plane-${index}-pos`;
+        planePosLabel.innerText = `Position`;
+
+        planePosContainer.appendChild(planePosLabel);
+        const planeX = this.setUpPosition(index, 'X', 'plane');
+        const planeY = this.setUpPosition(index, 'Y', 'plane');
+        const planeZ = this.setUpPosition(index, 'Z', 'plane');
+
+        planePosContainer.appendChild(planeX);
+        planePosContainer.appendChild(planeY);
+        planePosContainer.appendChild(planeZ);
+
+        const planePropertiesContainer = document.createElement("div");
+        planePropertiesContainer.id = `plane-${index}-properties-container`;
+        planePropertiesContainer.style.display = "flex";
+
+        const planeSize = document.createElement("input");
+        planeSize.id = `plane-${index}-size`;
+        planeSize.type = "range";
+        planeSize.min = "0";
+        planeSize.max = "10";
+        planeSize.step = "0.5";
+        planeSize.value = (this._scene.objects[index] as Plane).size?.toString();
+        planeSize.style.width = "100%";
+        planeSize.addEventListener("input", (e) => {
+            (this._scene.objects[index] as Plane).size = parseFloat((e.target as HTMLInputElement).value);
+        });
+        
+        const planeSizeLabel = document.createElement("label");
+        planeSizeLabel.htmlFor = `plane-${index}-size`;
+        planeSizeLabel.innerText = `Size`;
+
+        const planeSizeContainer = document.createElement("div");
+        planeSizeContainer.id = `plane-${index}-size-container`;
+
+        planeSizeContainer.appendChild(planeSizeLabel);
+        planeSizeContainer.appendChild(planeSize);
+
+        const planeColor = document.createElement("input");
+        planeColor.id = `plane-${index}-color`;
+        planeColor.type = "color";
+        planeColor.value = vec4ToHex(this._scene.objects[index].color);
+        planeColor.style.width = "100%";
+        planeColor.addEventListener("input", (e) => {
+            this._scene.objects[index].color = hexToVec4((e.target as HTMLInputElement).value);
+        });
+
+        const planeColorLabel = document.createElement("label");
+        planeColorLabel.htmlFor = `plane-${index}-color`;
+        planeColorLabel.innerText = `Color`;
+
+        const planeColorContainer = document.createElement("div");
+        planeColorContainer.id = `plane-${index}-color-container`;
+
+        planeColorContainer.appendChild(planeColorLabel);
+        planeColorContainer.appendChild(planeColor);
+
+        planePropertiesContainer.appendChild(planeSizeContainer);
+        planePropertiesContainer.appendChild(planeColorContainer);
+
+        planeContainer.appendChild(planePosContainer);
+        planeContainer.appendChild(planePropertiesContainer);
+
+        return planeContainer;
+    }
+
     private setUpPosition(index:number, axis: 'X' | 'Y' | 'Z', type: string): HTMLInputElement
     {
         const posInput = document.createElement("input");
@@ -429,11 +536,11 @@ export class UserInterface
         posInput.min = "-10";
         posInput.max = "10";
         posInput.step = "0.1";
-        posInput.value = this._scene.volumes[index].position[axis === 'X' ? 0 : axis === 'Y' ? 1 : 2].toString();
+        posInput.value = this._scene.objects[index].position[axis === 'X' ? 0 : axis === 'Y' ? 1 : 2].toString();
         posInput.style.width = "100%";
         const axisIndex = axis === 'X' ? 0 : axis === 'Y' ? 1 : 2;
         posInput.addEventListener("input", (e) => {
-            this._scene.volumes[index].position[axisIndex] = parseFloat((e.target as HTMLInputElement).value);
+            this._scene.objects[index].position[axisIndex] = parseFloat((e.target as HTMLInputElement).value);
         });
 
         return posInput;

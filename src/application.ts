@@ -1,12 +1,13 @@
-import { vec3 } from "gl-matrix";
+import { vec2, vec3 } from "gl-matrix";
 import { Camera } from "./camera";
 import { Render } from "./renderer";
 import { Scene } from "./scene";
 import { COLORS } from "./utils";
 import Stats from "stats.js";
-import { Sphere } from "./objects/sphere";
+import { Sphere } from "./objects/volumes/sphere";
 import { UserInterface } from "./ui";
-import { Cube } from "./objects/cube";
+import { Cube } from "./objects/volumes/cube";
+import { Plane } from "./objects/planes/plane";
 
 export class Application
 {
@@ -32,11 +33,16 @@ export class Application
         
         // Add a sphere
         const sphere = new Sphere({position: vec3.fromValues(1, 1, 0), radius: 0.5, color: COLORS.RED});
-        this._scene.addVolume(sphere);
+        this._scene.addObject(sphere);
 
         // Add a cube
-        const cube = new Cube({position: vec3.fromValues(0, 0.5, 0), size: 0.5, color: COLORS.YELLOW});
-        this._scene.addVolume(cube);
+        const cube = new Cube({position: vec3.fromValues(-0.5, 0.15, 0), size: 0.5, color: COLORS.YELLOW});
+        this._scene.addObject(cube);
+
+        // Add a plane
+        const plane = new Plane({position: vec3.fromValues(0, -2, 0), color: COLORS.BLUE});
+        this._scene.addObject(plane);
+
 
         // Move position on mouse move and clicking
         this._renderer.renderTarget.addEventListener("mousemove", (e) => {
@@ -64,7 +70,7 @@ export class Application
         // Zoom on mouse wheel
         this._renderer.renderTarget.addEventListener("wheel", (e) => {
             if(!this._camera) return;
-            this._camera!.position[2] -= e.deltaY / 1000;
+            this._camera.moveForward(-e.deltaY / 500);
         });
     }
 

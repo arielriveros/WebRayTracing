@@ -1,5 +1,5 @@
 import { vec3, vec4 } from "gl-matrix";
-import { VolumeObject } from "./volumeObject";
+import { RenderObject } from "../renderObject";
 
 interface SphereParameters
 {
@@ -9,7 +9,7 @@ interface SphereParameters
     color?: vec4
 }
 
-export class Sphere extends VolumeObject
+export class Sphere extends RenderObject
 {
     private _radius: number;
 
