@@ -19,15 +19,25 @@ export class Cube extends VolumeObject
     {
         super(position, rotation, color, 'cube');
         this._size = size;
-        this._min = vec3.fromValues(this.position[0] - this.size / 2, this.position[1] - this.size / 2, this.position[2] - this.size / 2);
-        this._max = vec3.fromValues(this.position[0] + this.size / 2, this.position[1] + this.size / 2, this.position[2] + this.size / 2);
+        
+        this._min = this.calcMin();
+        this._max = this.calcMax();
     }
 
     public get size(): number { return this._size; }
-    public set size(value: number) { this._size = value; }
+    public set size(value: number)
+    {
+        this._size = value; 
+        this._min = this.calcMin();
+        this._max = this.calcMax();
+    }
 
     public get min(): vec3 { return this._min; }
     public get max(): vec3 { return this._max; }
+
+    public calcMin(): vec3 { return vec3.add(vec3.create(), this.position, vec3.fromValues(-this.size, -this.size, -this.size)); }
+    public calcMax(): vec3 { return vec3.add(vec3.create(), this.position, vec3.fromValues(this.size, this.size, this.size)); }
+
 
     public override getNormalAtPoint(point: vec3): vec3
     {

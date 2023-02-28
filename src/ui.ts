@@ -378,6 +378,7 @@ export class UserInterface
         cubeSize.value = (this._scene.volumes[index] as Cube).size?.toString();
         cubeSize.style.width = "100%";
         cubeSize.addEventListener("input", (e) => {
+            console.log(this._scene.volumes[index]);
             (this._scene.volumes[index] as Cube).size = parseFloat((e.target as HTMLInputElement).value);
         });
 
@@ -432,7 +433,6 @@ export class UserInterface
         posInput.style.width = "100%";
         const axisIndex = axis === 'X' ? 0 : axis === 'Y' ? 1 : 2;
         posInput.addEventListener("input", (e) => {
-            console.log(this._scene.volumes[index].position[axisIndex]);
             this._scene.volumes[index].position[axisIndex] = parseFloat((e.target as HTMLInputElement).value);
         });
 
