@@ -24,7 +24,7 @@ export class Application
         this._stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
         document.body.appendChild( this._stats.dom );
 
-        this._camera = new Camera({});
+        this._camera = new Camera({position: vec3.fromValues(0, 1, 3)});
         this._scene = new Scene({});
         this._ui = new UserInterface(this._scene);
         document.body.appendChild(this._ui.dom);

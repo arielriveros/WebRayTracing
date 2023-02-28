@@ -27,9 +27,9 @@ export class Camera
 
     private _rayDirections!: vec3[];
 
-    constructor({position = vec3.fromValues(0, 0, -2), rotation = vec3.fromValues(0, 0, 0), fov = 45, near = 0.1, far = 100}: CameraParameters)
+    constructor({position = vec3.fromValues(0, 0, 2), rotation = vec3.fromValues(0, 0, 0), fov = 45, near = 0.1, far = 100}: CameraParameters)
     {
-        this._position = position;
+        this._position = vec3.negate(vec3.create(), position);
         this._rotation = rotation;
         this._fov = fov;
         this._near = near;
