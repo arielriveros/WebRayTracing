@@ -124,7 +124,7 @@ export class Render
             }            
         }
 
-        return vec4.normalize(finalColor, finalColor);
+        return finalColor;
     }
 
     private closestHit(ray: Ray, objectIndex: number, hitDistance: number): HitData
