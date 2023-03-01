@@ -13,6 +13,7 @@ class HitData
     public worldPosition: vec3;
     public worldNormal: vec3;
     public objectIndex: number;
+    public isInShadow: boolean;
 
     constructor()
     {
@@ -20,6 +21,7 @@ class HitData
         this.worldPosition = vec3.create();
         this.worldNormal = vec3.create();
         this.objectIndex = Number.MAX_VALUE;
+        this.isInShadow = false;
     }
 }
 
@@ -31,6 +33,7 @@ export class Render
     private _image!: ImageData;
     private _scene!: Scene;
     private _camera!: Camera;
+    private _bias: number = 0.00001;
     
     constructor(canvasId: string)
     {
@@ -60,11 +63,13 @@ export class Render
 
     public render(): void {
         vec3.normalize(this._scene.lightDir, this._scene.lightDir);
+        let color: vec4;
         for(let y = 0; y < this._renderTarget.height; y++)
         {
             for(let x = 0; x < this._renderTarget.width; x++)
             {
-                let color: vec4 = this.rayGen(x, y);
+                color = this.rayGen(x, y);
+                
                 let index = (x + y * this._renderTarget.width) * 4;
                 this._rgbBuffer[index]     = color[0] * 255;
                 this._rgbBuffer[index + 1] = color[1] * 255;
@@ -87,7 +92,6 @@ export class Render
 
     private rayGen(x: number, y: number): vec4
     {
-
         let ray: Ray = new Ray();
         ray.origin = this._camera.position;
         ray.direction = this._camera.rayDirections[x+y*this._renderTarget.width];
@@ -114,14 +118,27 @@ export class Render
 
             vec4.scaleAndAdd(finalColor, finalColor, color, reflectiveFactor);
 
+            // calculate shadow
+            let shadowRay = new Ray();
+            shadowRay.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, this._bias);
+            shadowRay.direction = vec3.negate(vec3.create(), this._scene.lightDir);
+            let shadowHitData = this.traceRay(shadowRay);
+            
+            if(shadowHitData.distance > 0.007)
+            {
+                finalColor[0] *= 0.1;
+                finalColor[1] *= 0.1;
+                finalColor[2] *= 0.1;
+            }
+
             if(this._scene.bounceLimit > 1)
             {
                 reflectiveFactor *= 0.4;
     
-                ray.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, 0.001);
+                ray.origin = shadowRay.origin;
                 let reflectionDir = vec3.sub(vec3.create(), ray.direction, vec3.scale(vec3.create(), hitData.worldNormal, 2 * vec3.dot(hitData.worldNormal, ray.direction)));
                 ray.direction = reflectionDir;
-            }            
+            }        
         }
 
         return finalColor;
