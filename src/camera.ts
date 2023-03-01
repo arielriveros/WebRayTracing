@@ -27,6 +27,14 @@ export class Camera
 
     private _rayDirections!: vec3[];
 
+    // Caches
+    private _forward_pos: vec3 = vec3.create();
+    private _target: vec4 = vec4.create();
+    private _normalized: vec3 = vec3.create(); 
+    private _fixed: vec4 = vec4.create();
+    private _inverted: vec4 = vec4.create();
+    private _rayDirection: vec3 = vec3.create();
+
     constructor({position = vec3.fromValues(0, 0, 2), rotation = vec3.fromValues(0, 0, 0), fov = 45, near = 0.1, far = 100}: CameraParameters)
     {
         this._position = vec3.negate(vec3.create(), position);
@@ -43,7 +51,6 @@ export class Camera
         this.calculateProjection();
         this.calculateView();
         this.calculateRayDirections();
-        mat4.lookAt(this._view, this._position, vec3.add(vec3.create(), this._position, this._forward), vec3.fromValues(0, 1, 0) );
     }
 
     public calculateProjection()
@@ -54,7 +61,7 @@ export class Camera
 
     public calculateView()
     {
-        mat4.lookAt(this._view, this._position, vec3.add(vec3.create(), this._position, this._forward), vec3.fromValues(0, 1, 0) );
+        mat4.lookAt(this._view, this._position, vec3.add(this._forward_pos, this._position, this._forward), vec3.fromValues(0, 1, 0) );
         mat4.invert(this._inverseView, this._view);
     }
 
@@ -92,13 +99,13 @@ export class Camera
 			    coord[0] = coord[0] * 2.0 - 1.0;
                 coord[1] = coord[1] * 2.0 - 1.0;
 
-                const target: vec4 = vec4.transformMat4(vec4.create(), [coord[0], coord[1], 1, 1] as vec4, this._inverseProjection);
-                const normalized: vec3 = vec3.normalize(vec3.create(), vec3.scale(vec3.create(), vec3.fromValues(target[0], target[1], target[2]), 1/target[3]));
-                const fixed: vec4 = vec4.fromValues(normalized[0], normalized[1], normalized[2], 0)
-                const inverted: vec4 = vec4.transformMat4(vec4.create(), fixed, this._inverseView);
-                const rayDirection: vec3 = vec3.fromValues(inverted[0], inverted[1], inverted[2]);
+                vec4.transformMat4(this._target, [coord[0], coord[1], 1, 1] as vec4, this._inverseProjection);
+                vec3.normalize(this._normalized, vec3.scale(vec3.create(), vec3.fromValues(this._target[0], this._target[1], this._target[2]), 1/this._target[3]));
+                this._fixed = vec4.fromValues(this._normalized[0], this._normalized[1], this._normalized[2], 0)
+                vec4.transformMat4(this._inverted, this._fixed, this._inverseView);
+                this._rayDirection = vec3.fromValues(this._inverted[0], this._inverted[1], this._inverted[2]);
                 // Cache ray directions
-                this._rayDirections[x + y * this._width] = rayDirection;
+                this._rayDirections[x + y * this._width] = this._rayDirection;
             }
         }
     }

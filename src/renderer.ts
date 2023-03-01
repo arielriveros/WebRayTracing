@@ -158,9 +158,9 @@ export class Render
         {
             let t: number = Number.MAX_VALUE;
             vec3.sub(origin, ray.origin, object.position);
-            switch(object.type)
             {
-                case 'plane':
+                if(object.type === 'plane')
+                {
                     let plane = object as Plane;
 
                     let denom: number = vec3.dot(plane.normal, ray.direction);
@@ -182,9 +182,10 @@ export class Render
                             }
                         }
                     }
-                    break;  
+                }
 
-                case 'sphere':
+                if(object.type === 'sphere')
+                {
                     let sphere = object as Sphere;
 
                     let a: number = vec3.dot(ray.direction, ray.direction);
@@ -201,9 +202,10 @@ export class Render
                         hitDistance = t;
                         closestObject = sphere as Sphere;
                     }
-                    break;
+                }
 
-                case 'cube':
+                if(object.type === 'cube')
+                {
                     let cube = object as Cube;
 
                     let tmin: number = (cube.min[0] - origin[0]) / ray.direction[0];
@@ -260,11 +262,7 @@ export class Render
                         closestObject = cube as Cube;
                     }
                     
-                    break;
-
-                default:
-                    closestObject = null;
-                    break;
+                }
             }
         }
 
