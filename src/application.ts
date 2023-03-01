@@ -77,14 +77,14 @@ export class Application
     public start(): void
     {
         this._ui.start();
-        this._renderer.start(this._camera, this._scene);
+        this._renderer.start(this._scene, this._camera);
         this.update();
     }
 
     public update() : void
     {
         this._stats.begin();
-        this._renderer.render(this._camera, this._scene);
+        this._renderer.render();
         this._stats.end();
         requestAnimationFrame(this.update.bind(this));
     }

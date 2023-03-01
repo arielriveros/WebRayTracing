@@ -14,6 +14,8 @@ export class Render
     private _renderContext: CanvasRenderingContext2D;
     private _rgbBuffer: Uint8ClampedArray;
     private _image!: ImageData;
+    private _scene!: Scene;
+    private _camera!: Camera;
     
     constructor(canvasId: string)
     {
@@ -34,13 +36,33 @@ export class Render
         });        
     }
 
-    public start(camera: Camera, scene: Scene): void
+    public start(scene: Scene, camera: Camera): void
     {
         camera.setHeightAndWidth(this._renderTarget.height, this._renderTarget.width);
+        this._scene = scene;
+        this._camera = camera;
     }
 
-    public render(camera: Camera, scene: Scene): void {
-        this.sample(camera, scene);
+    public render(): void {
+        vec3.normalize(this._scene.lightDir, this._scene.lightDir);
+
+        const rayOrigin: vec3 = this._camera.position;
+        let ray: Ray = new Ray();
+        ray.origin = rayOrigin;
+        
+        for(let y = 0; y < this._renderTarget.height; y++)
+        {
+            for(let x = 0; x < this._renderTarget.width; x++)
+            {
+                ray.direction = this._camera.rayDirections[x+y*this._renderTarget.width];
+                let color: vec4 = this.traceRay(ray, this._scene);
+                let index = (x + y * this._renderTarget.width) * 4;
+                this._rgbBuffer[index]     = color[0] * 255;
+                this._rgbBuffer[index + 1] = color[1] * 255;
+                this._rgbBuffer[index + 2] = color[2] * 255;
+                this._rgbBuffer[index + 3] = color[3] * 255;
+            }
+        }
         this.uploadBuffer();
     }
 
@@ -54,28 +76,6 @@ export class Render
         this._renderContext.putImageData(this._image, 0, 0);
     }
 
-    private sample(camera: Camera, scene: Scene): void
-    {
-        vec3.normalize(scene.lightDir, scene.lightDir);
-
-        const rayOrigin: vec3 = camera.position;
-        let ray: Ray = new Ray();
-        ray.origin = rayOrigin;
-        
-        for(let y = 0; y < this._renderTarget.height; y++)
-        {
-            for(let x = 0; x < this._renderTarget.width; x++)
-            {
-                ray.direction = camera.rayDirections[x+y*this._renderTarget.width];
-                let color: vec4 = this.traceRay(ray, scene);
-                let index = (x + y * this._renderTarget.width) * 4;
-                this._rgbBuffer[index]     = color[0] * 255;
-                this._rgbBuffer[index + 1] = color[1] * 255;
-                this._rgbBuffer[index + 2] = color[2] * 255;
-                this._rgbBuffer[index + 3] = color[3] * 255;
-            }
-        }
-    }
 
     private traceRay(ray: Ray, scene: Scene): vec4
     {
