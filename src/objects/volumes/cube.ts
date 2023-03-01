@@ -35,17 +35,21 @@ export class Cube extends RenderObject
     public get min(): vec3 { return this._min; }
     public get max(): vec3 { return this._max; }
 
-    public calcMin(): vec3 { 
-        
+    public calcMin(): vec3
+    { 
         return vec3.add(this._min, this.position, vec3.fromValues(-this._size, -this._size, -this._size)); 
     }
-    public calcMax(): vec3 { return vec3.add(this._max, this.position, vec3.fromValues(this._size, this._size, this._size)); }
+    
+    public calcMax(): vec3 
+    { 
+        return vec3.add(this._max, this.position, vec3.fromValues(this._size, this._size, this._size));
+    }
 
     public override getNormalAtPoint(point: vec3): vec3
     {
         let normal = vec3.create();
-        let min = this._min;
-        let max = this._min;
+        let min = this.min;
+        let max = this.max;
 
         if(point[0] === min[0])
             normal[0] = -1;

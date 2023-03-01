@@ -59,6 +59,7 @@ export class Render
     }
 
     public render(): void {
+        vec3.normalize(this._scene.lightDir, this._scene.lightDir);
         for(let y = 0; y < this._renderTarget.height; y++)
         {
             for(let x = 0; x < this._renderTarget.width; x++)
@@ -86,7 +87,6 @@ export class Render
 
     private rayGen(x: number, y: number): vec4
     {
-        vec3.normalize(this._scene.lightDir, this._scene.lightDir);
 
         let ray: Ray = new Ray();
         ray.origin = this._camera.position;
@@ -100,8 +100,7 @@ export class Render
             let hitData = this.traceRay(ray);
             if(hitData.distance < 0)
             {
-                //vec4.scaleAndAdd(finalColor, finalColor, this._scene.backgroundColor, reflectiveFactor);
-                vec4.add(finalColor, finalColor, this._scene.backgroundColor);
+                vec4.scaleAndAdd(finalColor, finalColor, this._scene.backgroundColor, reflectiveFactor);
                 break;
             }    
             let diffuse: number = Math.max(this._scene.ambientLight, vec3.dot(hitData.worldNormal, vec3.negate(vec3.create(), this._scene.lightDir)));
@@ -117,16 +116,10 @@ export class Render
 
             if(this._scene.bounceLimit > 1)
             {
-                reflectiveFactor *= 0.8;
-    
-                let reflectionDir = vec3.create();
-
-                let nDotI = vec3.dot(hitData.worldNormal, ray.direction);
-                vec3.scale(reflectionDir, hitData.worldNormal, 2 * nDotI);
-                vec3.sub(reflectionDir, reflectionDir, ray.direction);
-                vec3.normalize(reflectionDir, reflectionDir);
+                reflectiveFactor *= 0.4;
     
                 ray.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, 0.001);
+                let reflectionDir = vec3.sub(vec3.create(), ray.direction, vec3.scale(vec3.create(), hitData.worldNormal, 2 * vec3.dot(hitData.worldNormal, ray.direction)));
                 ray.direction = reflectionDir;
             }            
         }
@@ -143,11 +136,9 @@ export class Render
         const closestObject: RenderObject = this._scene.objects[objectIndex];
 
         let origin = vec3.sub(vec3.create(), ray.origin, closestObject.position);
-        hitData.worldPosition = vec3.scaleAndAdd(vec3.create(), origin, ray.direction, hitDistance);
-        //hitData.worldNormal = vec3.normalize(vec3.create(), hitData.worldPosition);
-        hitData.worldNormal = vec3.normalize(vec3.create(), closestObject.getNormalAtPoint(hitData.worldPosition));
-        hitData.worldPosition = vec3.add(vec3.create(), hitData.worldPosition, closestObject.position);
-        
+        vec3.scaleAndAdd(hitData.worldPosition, origin, ray.direction, hitDistance);
+        vec3.normalize(hitData.worldNormal, closestObject.getNormalAtPoint(hitData.worldPosition));
+        vec3.add(hitData.worldPosition, hitData.worldPosition, closestObject.position);
         
         return hitData;
     }
@@ -166,7 +157,7 @@ export class Render
         for(let object of this._scene.objects)
         {
             let t: number = Number.MAX_VALUE;
-            origin = vec3.sub(vec3.create(), ray.origin, object.position);
+            vec3.sub(origin, ray.origin, object.position);
             switch(object.type)
             {
                 case 'plane':
@@ -205,7 +196,7 @@ export class Render
                         continue;
                 
                     t = (-b - Math.sqrt(d)) / (2.0 * a);
-                    if(t < hitDistance)
+                    if(t < hitDistance && t > 0.0)
                     {
                         hitDistance = t;
                         closestObject = sphere as Sphere;
@@ -263,7 +254,7 @@ export class Render
                     if(tzmax < tmax)
                         tmax = tzmax;
 
-                    if(tmin < hitDistance)
+                    if(tmin < hitDistance && tmin > 0.0)
                     {   
                         hitDistance = tmin;
                         closestObject = cube as Cube;
@@ -272,6 +263,7 @@ export class Render
                     break;
 
                 default:
+                    closestObject = null;
                     break;
             }
         }
