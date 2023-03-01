@@ -7,6 +7,7 @@ interface SceneParameters
     lightDir?: vec3;
     ambientLight?: number;
     backgroundColor?: vec4;
+    bounceLimit?: number;
 }
 
 export class Scene
@@ -15,13 +16,15 @@ export class Scene
     private _lightDir: vec3;
     private _ambientLight: number;
     private _backgroundColor: vec4;
+    private _bounceLimit: number;
 
-    constructor({lightDir = vec3.fromValues(0, 1, 0), ambientLight = 0.1, backgroundColor = COLORS.BLACK}: SceneParameters)
+    constructor({lightDir = vec3.fromValues(0, 1, 0), ambientLight = 0.1, backgroundColor = COLORS.BLACK, bounceLimit = 1}: SceneParameters)
     {
         this._objects = [];
         this._lightDir = lightDir;
         this._ambientLight = ambientLight;
         this._backgroundColor = backgroundColor;
+        this._bounceLimit = bounceLimit;
     }
 
     public get objects(): Array<RenderObject> { return this._objects; }
@@ -34,6 +37,9 @@ export class Scene
 
     public get backgroundColor(): vec4 { return this._backgroundColor; }
     public set backgroundColor(value: vec4) { this._backgroundColor = value; }
+
+    public get bounceLimit(): number { return this._bounceLimit; }
+    public set bounceLimit(value: number) { this._bounceLimit = value; }
 
     public addObject(object: RenderObject): void
     {

@@ -32,15 +32,15 @@ export class Application
         this._scene.lightDir = vec3.normalize(vec3.create(), vec3.fromValues(0, 0, 1));
         
         // Add a sphere
-        const sphere = new Sphere({position: vec3.fromValues(1, 1, 0), radius: 0.5, color: COLORS.RED});
+        const sphere = new Sphere({position: vec3.fromValues(0, -1, 0), radius: 0.5, color: COLORS.RED});
         this._scene.addObject(sphere);
 
         // Add a cube
-        const cube = new Cube({position: vec3.fromValues(-0.5, 0.15, 0), size: 0.5, color: COLORS.YELLOW});
-        this._scene.addObject(cube);
+        //const cube = new Cube({position: vec3.fromValues(-0.5, 0.15, 0), size: 0.5, color: COLORS.YELLOW});
+        //this._scene.addObject(cube);
 
         // Add a plane
-        const plane = new Plane({position: vec3.fromValues(0, -2, 0), color: COLORS.BLUE});
+        const plane = new Plane({color: COLORS.CYAN, size: 4});
         this._scene.addObject(plane);
 
 

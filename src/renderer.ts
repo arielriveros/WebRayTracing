@@ -92,21 +92,46 @@ export class Render
         ray.origin = this._camera.position;
         ray.direction = this._camera.rayDirections[x+y*this._renderTarget.width];
 
-        let hitData = this.traceRay(ray);
-        if(hitData.distance < 0)
-            return this._scene.backgroundColor;
+        let finalColor: vec4 = vec4.create();
+        let reflectiveFactor: number = 1;
 
-        let diffuse: number = Math.max(this._scene.ambientLight, vec3.dot(hitData.worldNormal, vec3.negate(vec3.create(), this._scene.lightDir)));
+        for(let i = 0; i < this._scene.bounceLimit; i++)
+        {
+            let hitData = this.traceRay(ray);
+            if(hitData.distance < 0)
+            {
+                //vec4.scaleAndAdd(finalColor, finalColor, this._scene.backgroundColor, reflectiveFactor);
+                vec4.add(finalColor, finalColor, this._scene.backgroundColor);
+                break;
+            }    
+            let diffuse: number = Math.max(this._scene.ambientLight, vec3.dot(hitData.worldNormal, vec3.negate(vec3.create(), this._scene.lightDir)));
+            let object: RenderObject = this._scene.objects[hitData.objectIndex];
+    
+            let color = vec4.create(); 
+            vec4.copy(color, object.color);
+            color[0] *= diffuse;
+            color[1] *= diffuse;
+            color[2] *= diffuse;
 
-        let object: RenderObject = this._scene.objects[hitData.objectIndex];
+            vec4.scaleAndAdd(finalColor, finalColor, color, reflectiveFactor);
 
-        let color = vec4.create(); 
-        vec4.copy(color, object.color);
-        color[0] *= diffuse;
-        color[1] *= diffuse;
-        color[2] *= diffuse;
+            if(this._scene.bounceLimit > 1)
+            {
+                reflectiveFactor *= 0.8;
+    
+                let reflectionDir = vec3.create();
 
-        return color;
+                let nDotI = vec3.dot(hitData.worldNormal, ray.direction);
+                vec3.scale(reflectionDir, hitData.worldNormal, 2 * nDotI);
+                vec3.sub(reflectionDir, reflectionDir, ray.direction);
+                vec3.normalize(reflectionDir, reflectionDir);
+    
+                ray.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, 0.001);
+                ray.direction = reflectionDir;
+            }            
+        }
+
+        return vec4.normalize(finalColor, finalColor);
     }
 
     private closestHit(ray: Ray, objectIndex: number, hitDistance: number): HitData
@@ -117,8 +142,9 @@ export class Render
         
         const closestObject: RenderObject = this._scene.objects[objectIndex];
 
-        let origin = vec3.add(vec3.create(), ray.origin, closestObject.position);
+        let origin = vec3.sub(vec3.create(), ray.origin, closestObject.position);
         hitData.worldPosition = vec3.scaleAndAdd(vec3.create(), origin, ray.direction, hitDistance);
+        //hitData.worldNormal = vec3.normalize(vec3.create(), hitData.worldPosition);
         hitData.worldNormal = vec3.normalize(vec3.create(), closestObject.getNormalAtPoint(hitData.worldPosition));
         hitData.worldPosition = vec3.add(vec3.create(), hitData.worldPosition, closestObject.position);
         
@@ -140,7 +166,7 @@ export class Render
         for(let object of this._scene.objects)
         {
             let t: number = Number.MAX_VALUE;
-            origin = vec3.add(vec3.create(), ray.origin, object.position);
+            origin = vec3.sub(vec3.create(), ray.origin, object.position);
             switch(object.type)
             {
                 case 'plane':

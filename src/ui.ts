@@ -38,9 +38,40 @@ export class UserInterface
 
     public start(): void
     {
+        this.setUpMaxBounces();
         this.setUpDirectionalLight();
         this.setUpBackgroundColor();
         this.setUpObjects();
+    }
+
+    private setUpMaxBounces(): void
+    {
+        const maxBouncesContainer = document.createElement("div");
+        maxBouncesContainer.id = "max-bounces-container";
+        maxBouncesContainer.style.border = "1px solid black";
+
+        const maxBouncesLabel = document.createElement("label");
+        maxBouncesLabel.htmlFor = "maxBounces";
+        maxBouncesLabel.innerText = "Max Bounces";
+
+        maxBouncesContainer.appendChild(maxBouncesLabel);
+
+        const breakLine = document.createElement("br");
+        maxBouncesContainer.appendChild(breakLine);
+
+        const maxBouncesInput = document.createElement("input");
+        maxBouncesInput.id = "maxBounces";
+        maxBouncesInput.type = "number";
+        maxBouncesInput.min = "0";
+        maxBouncesInput.max = "3";
+        maxBouncesInput.value = "1";
+        maxBouncesInput.addEventListener("input", (e) => {
+            this._scene.bounceLimit = (e.target as HTMLInputElement).valueAsNumber;
+        });
+
+        maxBouncesContainer.appendChild(maxBouncesInput);
+
+        this._dom.appendChild(maxBouncesContainer);
     }
 
     private setUpDirectionalLight(): void
