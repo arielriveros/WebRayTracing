@@ -390,7 +390,6 @@ export class UserInterface
         cubeSize.value = (this._scene.objects[index] as Cube).size?.toString();
         cubeSize.style.width = "100%";
         cubeSize.addEventListener("input", (e) => {
-            console.log(this._scene.objects[index]);
             (this._scene.objects[index] as Cube).size = parseFloat((e.target as HTMLInputElement).value);
         });
 

@@ -7,12 +7,20 @@ import { RenderObject } from "./objects/renderObject";
 import { Cube } from "./objects/volumes/cube";
 import { Plane } from "./objects/planes/plane";
 
-interface HitData
+class HitData
 {
-    distance: number;
-    worldPosition: vec3;
-    worldnormal: vec3;
-    objectIndex: number;
+    public distance: number;
+    public worldPosition: vec3;
+    public worldNormal: vec3;
+    public objectIndex: number;
+
+    constructor()
+    {
+        this.distance = -1;
+        this.worldPosition = vec3.create();
+        this.worldNormal = vec3.create();
+        this.objectIndex = Number.MAX_VALUE;
+    }
 }
 
 export class Render
@@ -51,18 +59,11 @@ export class Render
     }
 
     public render(): void {
-        vec3.normalize(this._scene.lightDir, this._scene.lightDir);
-
-        const rayOrigin: vec3 = this._camera.position;
-        let ray: Ray = new Ray();
-        ray.origin = rayOrigin;
-        
         for(let y = 0; y < this._renderTarget.height; y++)
         {
             for(let x = 0; x < this._renderTarget.width; x++)
             {
-                ray.direction = this._camera.rayDirections[x+y*this._renderTarget.width];
-                let color: vec4 = this.traceRay(ray);
+                let color: vec4 = this.rayGen(x, y);
                 let index = (x + y * this._renderTarget.width) * 4;
                 this._rgbBuffer[index]     = color[0] * 255;
                 this._rgbBuffer[index + 1] = color[1] * 255;
@@ -72,11 +73,6 @@ export class Render
         }
         this.uploadBuffer();
     }
-
-    /* private rayGen(x: number, y: number): vec4
-    {
-
-    } */
 
     private uploadBuffer(): void
     {
@@ -88,12 +84,55 @@ export class Render
         this._renderContext.putImageData(this._image, 0, 0);
     }
 
-
-    private traceRay(ray: Ray): vec4
+    private rayGen(x: number, y: number): vec4
     {
-        if(this._scene.objects.length == 0)
+        vec3.normalize(this._scene.lightDir, this._scene.lightDir);
+
+        let ray: Ray = new Ray();
+        ray.origin = this._camera.position;
+        ray.direction = this._camera.rayDirections[x+y*this._renderTarget.width];
+
+        let hitData = this.traceRay(ray);
+        if(hitData.distance < 0)
             return this._scene.backgroundColor;
+
+        let diffuse: number = Math.max(this._scene.ambientLight, vec3.dot(hitData.worldNormal, vec3.negate(vec3.create(), this._scene.lightDir)));
+
+        let object: RenderObject = this._scene.objects[hitData.objectIndex];
+
+        let color = vec4.create(); 
+        vec4.copy(color, object.color);
+        color[0] *= diffuse;
+        color[1] *= diffuse;
+        color[2] *= diffuse;
+
+        return color;
+    }
+
+    private closestHit(ray: Ray, objectIndex: number, hitDistance: number): HitData
+    {
+        const hitData: HitData = new HitData();
+        hitData.distance = hitDistance;
+        hitData.objectIndex = objectIndex;
         
+        const closestObject: RenderObject = this._scene.objects[objectIndex];
+
+        let origin = vec3.add(vec3.create(), ray.origin, closestObject.position);
+        hitData.worldPosition = vec3.scaleAndAdd(vec3.create(), origin, ray.direction, hitDistance);
+        hitData.worldNormal = vec3.normalize(vec3.create(), closestObject.getNormalAtPoint(hitData.worldPosition));
+        hitData.worldPosition = vec3.add(vec3.create(), hitData.worldPosition, closestObject.position);
+        
+        
+        return hitData;
+    }
+
+    private miss(ray: Ray): HitData
+    {
+        return new HitData();
+    }
+
+    private traceRay(ray: Ray): HitData
+    {
         let closestObject: RenderObject | null = null;
         let hitDistance: number = Number.MAX_VALUE;
 
@@ -101,8 +140,7 @@ export class Render
         for(let object of this._scene.objects)
         {
             let t: number = Number.MAX_VALUE;
-            origin = vec3.create();
-            vec3.add(origin, ray.origin, object.position);
+            origin = vec3.add(vec3.create(), ray.origin, object.position);
             switch(object.type)
             {
                 case 'plane':
@@ -112,12 +150,12 @@ export class Render
                     if(denom > 0.0001)
                     {
                         let p0l0: vec3 = vec3.create();
-                        vec3.sub(p0l0, plane.position, origin);
+                        vec3.sub(p0l0, plane.position, ray.origin);
                         t = vec3.dot(p0l0, plane.normal) / denom;
                         if(t < hitDistance)
                         {
                             let hitPoint: vec3 = vec3.create();
-                            vec3.scaleAndAdd(hitPoint, origin, ray.direction, t);
+                            vec3.scaleAndAdd(hitPoint, ray.origin, ray.direction, t);
                             let u: number = vec3.dot(hitPoint, plane.tangent);
                             let v: number = vec3.dot(hitPoint, plane.bitangent);
                             if(u >= plane.uMin && u <= plane.uMax && v >= plane.vMin && v <= plane.vMax)
@@ -213,23 +251,9 @@ export class Render
         }
 
         if(closestObject == null)
-            return this._scene.backgroundColor;
+            return this.miss(ray);
 
-        origin = vec3.create();
-        vec3.add(origin, ray.origin, closestObject.position);
-        let hit: vec3 = vec3.scaleAndAdd(vec3.create(), origin, ray.direction, hitDistance);
-
-        let normal: vec3 = closestObject.getNormalAtPoint(hit);
-
-        let diffuse: number = Math.max(this._scene.ambientLight, vec3.dot(normal, vec3.negate(vec3.create(), this._scene.lightDir)));
-
-        let volumeColor = vec4.create(); 
-        vec4.copy(volumeColor, closestObject.color);
-        volumeColor[0] *= diffuse;
-        volumeColor[1] *= diffuse;
-        volumeColor[2] *= diffuse;
-        
-        return volumeColor;        
+        return this.closestHit(ray, this._scene.objects.indexOf(closestObject), hitDistance);     
     }
 
     public get renderTarget(): HTMLCanvasElement { return this._renderTarget; }

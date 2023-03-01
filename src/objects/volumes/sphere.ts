@@ -23,6 +23,6 @@ export class Sphere extends RenderObject
     public set radius(value: number) { this._radius = value; }
 
     public override getNormalAtPoint(point: vec3): vec3 {
-        return vec3.normalize(vec3.create(), point);
+        return point;
     }
 }

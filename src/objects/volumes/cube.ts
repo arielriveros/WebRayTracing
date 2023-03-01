@@ -12,8 +12,8 @@ interface CubeParameters
 export class Cube extends RenderObject
 {
     private _size: number;
-    private _min: vec3;
-    private _max: vec3;
+    private _min: vec3 = vec3.create();
+    private _max: vec3 = vec3.create();
 
     constructor({position = vec3.create(), rotation = vec3.create(), size = 1, color = vec4.fromValues(1, 1, 1, 1)}: CubeParameters)
     {
@@ -35,9 +35,11 @@ export class Cube extends RenderObject
     public get min(): vec3 { return this._min; }
     public get max(): vec3 { return this._max; }
 
-    public calcMin(): vec3 { return vec3.add(vec3.create(), this.position, vec3.fromValues(-this._size, -this._size, -this._size)); }
-    public calcMax(): vec3 { return vec3.add(vec3.create(), this.position, vec3.fromValues(this._size, this._size, this._size)); }
-
+    public calcMin(): vec3 { 
+        
+        return vec3.add(this._min, this.position, vec3.fromValues(-this._size, -this._size, -this._size)); 
+    }
+    public calcMax(): vec3 { return vec3.add(this._max, this.position, vec3.fromValues(this._size, this._size, this._size)); }
 
     public override getNormalAtPoint(point: vec3): vec3
     {
