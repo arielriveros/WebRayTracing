@@ -7,6 +7,13 @@ import { RenderObject } from "./objects/renderObject";
 import { Cube } from "./objects/volumes/cube";
 import { Plane } from "./objects/planes/plane";
 
+interface HitData
+{
+    distance: number;
+    worldPosition: vec3;
+    worldnormal: vec3;
+    objectIndex: number;
+}
 
 export class Render
 {
@@ -55,7 +62,7 @@ export class Render
             for(let x = 0; x < this._renderTarget.width; x++)
             {
                 ray.direction = this._camera.rayDirections[x+y*this._renderTarget.width];
-                let color: vec4 = this.traceRay(ray, this._scene);
+                let color: vec4 = this.traceRay(ray);
                 let index = (x + y * this._renderTarget.width) * 4;
                 this._rgbBuffer[index]     = color[0] * 255;
                 this._rgbBuffer[index + 1] = color[1] * 255;
@@ -65,6 +72,11 @@ export class Render
         }
         this.uploadBuffer();
     }
+
+    /* private rayGen(x: number, y: number): vec4
+    {
+
+    } */
 
     private uploadBuffer(): void
     {
@@ -77,16 +89,16 @@ export class Render
     }
 
 
-    private traceRay(ray: Ray, scene: Scene): vec4
+    private traceRay(ray: Ray): vec4
     {
-        if(scene.objects.length == 0)
-            return scene.backgroundColor;
+        if(this._scene.objects.length == 0)
+            return this._scene.backgroundColor;
         
         let closestObject: RenderObject | null = null;
         let hitDistance: number = Number.MAX_VALUE;
 
         let origin: vec3 = vec3.create();
-        for(let object of scene.objects)
+        for(let object of this._scene.objects)
         {
             let t: number = Number.MAX_VALUE;
             origin = vec3.create();
@@ -201,7 +213,7 @@ export class Render
         }
 
         if(closestObject == null)
-            return scene.backgroundColor;
+            return this._scene.backgroundColor;
 
         origin = vec3.create();
         vec3.add(origin, ray.origin, closestObject.position);
@@ -209,7 +221,7 @@ export class Render
 
         let normal: vec3 = closestObject.getNormalAtPoint(hit);
 
-        let diffuse: number = Math.max(scene.ambientLight, vec3.dot(normal, vec3.negate(vec3.create(), scene.lightDir)));
+        let diffuse: number = Math.max(this._scene.ambientLight, vec3.dot(normal, vec3.negate(vec3.create(), this._scene.lightDir)));
 
         let volumeColor = vec4.create(); 
         vec4.copy(volumeColor, closestObject.color);
