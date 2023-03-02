@@ -80,8 +80,8 @@ export class Application
 
     public start(): void
     {
-        this._ui.start();
         this._renderer.start(this._scene, this._camera);
+        this._ui.start(this._renderer);
         this.update();
     }
 

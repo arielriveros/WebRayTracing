@@ -4,16 +4,16 @@ import { Scene } from "./scene";
 import { Sphere } from "./objects/volumes/sphere";
 import { Cube } from "./objects/volumes/cube";
 import { Plane } from "./objects/planes/plane";
+import { Render } from "./renderer";
 
 export class UserInterface
 {
-    private _scene: Scene
+    private _renderer!: Render;
+    private _scene!: Scene
     private _dom: HTMLDivElement;
 
     constructor(scene: Scene)
     {
-        this._scene = scene;
-
         const uiContainer = document.createElement("div");
         uiContainer.id = "ui-container";
         uiContainer.style.backgroundColor = "#333333";
@@ -36,8 +36,10 @@ export class UserInterface
         this._dom = uiContainer;
     }
 
-    public start(): void
+    public start(renderer: Render): void
     {
+        this._renderer = renderer;
+        this._scene = renderer.scene;
         this.setUpMaxBounces();
         this.setUpDirectionalLight();
         this.setUpBackgroundColor();
@@ -66,7 +68,7 @@ export class UserInterface
         maxBouncesInput.max = "3";
         maxBouncesInput.value = "1";
         maxBouncesInput.addEventListener("input", (e) => {
-            this._scene.bounceLimit = (e.target as HTMLInputElement).valueAsNumber;
+            this._renderer.bounceLimit = (e.target as HTMLInputElement).valueAsNumber;
         });
 
         maxBouncesContainer.appendChild(maxBouncesInput);

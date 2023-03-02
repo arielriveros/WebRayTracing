@@ -35,6 +35,8 @@ export class Render
     private _camera!: Camera;
     private _bias: number = 0.00001;
     private _clearColor: vec4 = vec4.fromValues(0, 0, 0, 1);
+    private _bounceLimit: number = 1;
+    private _previousBoundceLimit: number = 1;
     
     constructor(canvasId: string)
     {
@@ -59,22 +61,28 @@ export class Render
     {
         camera.setHeightAndWidth(this._renderTarget.height, this._renderTarget.width);
         this._scene = scene;
+        this._scene.renderer = this;
         this._camera = camera;
     }
 
     public render(): void {
         let color: vec4;
+
+        if(this._camera.isMoving)
+            this._bounceLimit = 1;
+        else
+            this._bounceLimit = this._previousBoundceLimit;
+
         for(let y = 0; y < this._renderTarget.height; y++)
         {
             for(let x = 0; x < this._renderTarget.width; x++)
             {
-                // skip some pixels and set max bounces to 1 to speed up rendering when camera is moving
+                // skip some pixels to speed up rendering when camera is moving
                 if(this._camera.isMoving && x % 2 == 0 && y % 2 == 0 && x % 4 != 0 && y % 4 != 0)
                 {
                     this._rgbBuffer[(x + y * this._renderTarget.width) * 4] = this._clearColor[0] * 255;
                     this._rgbBuffer[(x + y * this._renderTarget.width) * 4 + 1] = this._clearColor[1] * 255;
                     this._rgbBuffer[(x + y * this._renderTarget.width) * 4 + 2] = this._clearColor[2] * 255;
-                    this._scene.bounceLimit = 1;
                     continue;
                 }
                 
@@ -109,7 +117,7 @@ export class Render
         let finalColor: vec4 = vec4.create();
         let reflectiveFactor: number = 1;
 
-        for(let i = 0; i < this._scene.bounceLimit; i++)
+        for(let i = 0; i < this._bounceLimit; i++)
         {
             let hitData = this.traceRay(ray);
             if(hitData.distance < 0)
@@ -128,30 +136,33 @@ export class Render
 
             vec4.scaleAndAdd(finalColor, finalColor, color, reflectiveFactor);
 
-            // calculate shadow
-            let shadowRay = new Ray();
-            shadowRay.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, this._bias);
-            // shador ray direction with random offset to avoid shadow acne
-            let randomOffset = vec3.create();
-            randomOffset[0] = Math.random() * 0.02;
-            randomOffset[1] = Math.random() * 0.02;
-            randomOffset[2] = Math.random() * 0.02;
-            shadowRay.direction = vec3.sub(vec3.create(), this._scene.lightDir, randomOffset);
-            shadowRay.direction = vec3.negate(shadowRay.direction, shadowRay.direction);
-            let shadowHitData = this.traceRay(shadowRay);
-            
-            if(shadowHitData.distance > 0.007)
+            if(!this._camera.isMoving)
             {
-                finalColor[0] *= 0.1;
-                finalColor[1] *= 0.1;
-                finalColor[2] *= 0.1;
+                // calculate shadow
+                let shadowRay = new Ray();
+                shadowRay.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, this._bias);
+                // shador ray direction with random offset to avoid shadow acne
+                let randomOffset = vec3.create();
+                randomOffset[0] = Math.random() * 0.02;
+                randomOffset[1] = Math.random() * 0.02;
+                randomOffset[2] = Math.random() * 0.02;
+                shadowRay.direction = vec3.sub(vec3.create(), this._scene.lightDir, randomOffset);
+                shadowRay.direction = vec3.negate(shadowRay.direction, shadowRay.direction);
+                let shadowHitData = this.traceRay(shadowRay);
+                
+                if(shadowHitData.distance > 0.007)
+                {
+                    finalColor[0] *= 0.1;
+                    finalColor[1] *= 0.1;
+                    finalColor[2] *= 0.1;
+                }
             }
 
-            if(this._scene.bounceLimit > 1)
+            if(this._bounceLimit > 1)
             {
                 reflectiveFactor *= 0.4;
     
-                ray.origin = shadowRay.origin;
+                ray.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, this._bias);
                 let reflectionDir = vec3.sub(vec3.create(), ray.direction, vec3.scale(vec3.create(), hitData.worldNormal, 2 * vec3.dot(hitData.worldNormal, ray.direction)));
                 ray.direction = reflectionDir;
             }        
@@ -306,4 +317,10 @@ export class Render
     }
 
     public get renderTarget(): HTMLCanvasElement { return this._renderTarget; }
+    public get scene(): Scene { return this._scene; }
+
+    public set bounceLimit(value: number) { 
+        this._previousBoundceLimit = value;
+        this._bounceLimit = value; 
+    }
 }
