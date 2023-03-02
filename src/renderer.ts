@@ -13,7 +13,6 @@ class HitData
     public worldPosition: vec3;
     public worldNormal: vec3;
     public objectIndex: number;
-    public isInShadow: boolean;
 
     constructor()
     {
@@ -21,7 +20,6 @@ class HitData
         this.worldPosition = vec3.create();
         this.worldNormal = vec3.create();
         this.objectIndex = Number.MAX_VALUE;
-        this.isInShadow = false;
     }
 }
 
@@ -37,6 +35,7 @@ export class Render
     private _clearColor: vec4 = vec4.fromValues(0, 0, 0, 1);
     private _bounceLimit: number = 1;
     private _previousBoundceLimit: number = 1;
+    private _shadowBias: number = 0.02;
     
     constructor(canvasId: string)
     {
@@ -143,9 +142,9 @@ export class Render
                 shadowRay.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, this._bias);
                 // shador ray direction with random offset to avoid shadow acne
                 let randomOffset = vec3.create();
-                randomOffset[0] = Math.random() * 0.02;
-                randomOffset[1] = Math.random() * 0.02;
-                randomOffset[2] = Math.random() * 0.02;
+                randomOffset[0] = Math.random() * this._shadowBias;
+                randomOffset[1] = Math.random() * this._shadowBias;
+                randomOffset[2] = Math.random() * this._shadowBias;
                 shadowRay.direction = vec3.sub(vec3.create(), this._scene.lightDir, randomOffset);
                 shadowRay.direction = vec3.negate(shadowRay.direction, shadowRay.direction);
                 let shadowHitData = this.traceRay(shadowRay);
@@ -323,4 +322,7 @@ export class Render
         this._previousBoundceLimit = value;
         this._bounceLimit = value; 
     }
+
+    public get shadowBias(): number { return this._shadowBias; }
+    public set shadowBias(value: number) { this._shadowBias = value; }
 }

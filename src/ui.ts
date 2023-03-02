@@ -40,10 +40,16 @@ export class UserInterface
     {
         this._renderer = renderer;
         this._scene = renderer.scene;
-        this.setUpMaxBounces();
+        this.setUpRenderSettings();
         this.setUpDirectionalLight();
         this.setUpBackgroundColor();
         this.setUpObjects();
+    }
+
+    private setUpRenderSettings(): void
+    {
+        this.setUpMaxBounces();
+        this.setUpShadowBias();
     }
 
     private setUpMaxBounces(): void
@@ -74,6 +80,37 @@ export class UserInterface
         maxBouncesContainer.appendChild(maxBouncesInput);
 
         this._dom.appendChild(maxBouncesContainer);
+    }
+
+    private setUpShadowBias(): void
+    {
+        const shadowBiasContainer = document.createElement("div");
+        shadowBiasContainer.id = "shadow-bias-container";
+        shadowBiasContainer.style.border = "1px solid black";
+
+        const shadowBiasLabel = document.createElement("label");
+        shadowBiasLabel.htmlFor = "shadowBias";
+        shadowBiasLabel.innerText = "Shadow Bias";
+
+        shadowBiasContainer.appendChild(shadowBiasLabel);
+
+        const breakLine = document.createElement("br");
+        shadowBiasContainer.appendChild(breakLine);
+
+        const shadowBiasInput = document.createElement("input");
+        shadowBiasInput.id = "shadowBias";
+        shadowBiasInput.type = "number";
+        shadowBiasInput.min = "0";
+        shadowBiasInput.max = "0.2";
+        shadowBiasInput.step = "0.001";
+        shadowBiasInput.value = this._renderer.shadowBias.toString();
+        shadowBiasInput.addEventListener("input", (e) => {
+            this._renderer.shadowBias = (e.target as HTMLInputElement).valueAsNumber;
+        });
+
+        shadowBiasContainer.appendChild(shadowBiasInput);
+
+        this._dom.appendChild(shadowBiasContainer);
     }
 
     private setUpDirectionalLight(): void
