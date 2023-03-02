@@ -29,7 +29,7 @@ export class Application
         this._ui = new UserInterface(this._scene);
         document.body.appendChild(this._ui.dom);
 
-        this._scene.lightDir = vec3.normalize(vec3.create(), vec3.fromValues(0, 0, 1));
+        this._scene.lightDir = vec3.normalize(vec3.create(), vec3.fromValues(1, 1, 1));
         
         // Add a sphere
         const sphere = new Sphere({position: vec3.fromValues(0, -1, 0), radius: 0.5, color: COLORS.RED});

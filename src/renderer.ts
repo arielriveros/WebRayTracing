@@ -121,7 +121,13 @@ export class Render
             // calculate shadow
             let shadowRay = new Ray();
             shadowRay.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, this._bias);
-            shadowRay.direction = vec3.negate(vec3.create(), this._scene.lightDir);
+            // shador ray direction with random offset to avoid shadow acne
+            let randomOffset = vec3.create();
+            randomOffset[0] = Math.random() * 0.02;
+            randomOffset[1] = Math.random() * 0.02;
+            randomOffset[2] = Math.random() * 0.02;
+            shadowRay.direction = vec3.sub(vec3.create(), this._scene.lightDir, randomOffset);
+            shadowRay.direction = vec3.negate(shadowRay.direction, shadowRay.direction);
             let shadowHitData = this.traceRay(shadowRay);
             
             if(shadowHitData.distance > 0.007)
