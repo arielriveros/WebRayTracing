@@ -62,12 +62,18 @@ export class Render
     }
 
     public render(): void {
-        vec3.normalize(this._scene.lightDir, this._scene.lightDir);
         let color: vec4;
         for(let y = 0; y < this._renderTarget.height; y++)
         {
             for(let x = 0; x < this._renderTarget.width; x++)
             {
+                // skip some pixels and set max bounces to 1 to speed up rendering when camera is moving
+                if(this._camera.isMoving && x % 2 == 0 && y % 2 == 0 && x % 4 != 0 && y % 4 != 0)
+                {
+                    this._scene.bounceLimit = 1;
+                    continue;
+                }
+                
                 color = this.rayGen(x, y);
                 
                 let index = (x + y * this._renderTarget.width) * 4;

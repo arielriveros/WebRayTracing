@@ -27,6 +27,8 @@ export class Camera
 
     private _rayDirections!: vec3[];
 
+    private _isMoving: boolean = false;
+
     // Caches
     private _forward_pos: vec3 = vec3.create();
     private _target: vec4 = vec4.create();
@@ -115,6 +117,9 @@ export class Camera
     public get rotation(): vec3 { return this._rotation; }
     public get height(): number { return this._height; }
     public get width(): number { return this._width; }
+
+    public get isMoving(): boolean { return this._isMoving; }
+    public set isMoving(value: boolean) { this._isMoving = value; }
 
     public setHeightAndWidth(height: number, width: number): void
     {

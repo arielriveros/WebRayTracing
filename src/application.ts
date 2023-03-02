@@ -48,22 +48,26 @@ export class Application
         this._renderer.renderTarget.addEventListener("mousemove", (e) => {
             if(!this._camera) return;
 
-            
-            if(e.buttons === 1)
-            {
-                this._camera.moveForward(-e.movementY / 100);
-                this._camera.moveRight(e.movementX / 100);
-            }
+            switch(e.buttons)
+            {   
+                case 1:
+                    this._camera.moveForward(-e.movementY / 100);
+                    this._camera.moveRight(e.movementX / 100);
+                    this._camera.isMoving = true;
+                    break;
+                case 2:
+                    this._camera.rotateY(-e.movementX / 500);
+                    this._camera.isMoving = true;
+                    break;
+                case 3:
+                    this._camera.moveUp(e.movementY / 100);
+                    this._camera.moveRight(e.movementX / 100);
+                    this._camera.isMoving = true;
+                    break;
+                default:
+                    this._camera.isMoving = false;
+                    break;
 
-            if(e.buttons === 2)
-            {
-                this._camera.rotateY(-e.movementX / 500);
-            }
-
-            if(e.buttons === 3)
-            {
-                this._camera.moveUp(e.movementY / 100);
-                this._camera.moveRight(e.movementX / 100);
             }
         });     
         
