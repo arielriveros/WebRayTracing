@@ -140,7 +140,7 @@ export class Render
                 // calculate shadow
                 let shadowRay = new Ray();
                 shadowRay.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, this._bias);
-                // shador ray direction with random offset to avoid shadow acne
+                // shador ray direction with random offset to artificially soften shadows
                 let randomOffset = vec3.create();
                 randomOffset[0] = Math.random() * this._shadowBias;
                 randomOffset[1] = Math.random() * this._shadowBias;
@@ -151,9 +151,11 @@ export class Render
                 
                 if(shadowHitData.distance > 0.007)
                 {
-                    finalColor[0] *= 0.1;
-                    finalColor[1] *= 0.1;
-                    finalColor[2] *= 0.1;
+                    let shadowFactor: number = 0.5 * reflectiveFactor;
+                    
+                    finalColor[0] -= shadowFactor;
+                    finalColor[1] -= shadowFactor;
+                    finalColor[2] -= shadowFactor;
                 }
             }
 
