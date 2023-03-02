@@ -34,6 +34,7 @@ export class Render
     private _scene!: Scene;
     private _camera!: Camera;
     private _bias: number = 0.00001;
+    private _clearColor: vec4 = vec4.fromValues(0, 0, 0, 1);
     
     constructor(canvasId: string)
     {
@@ -70,6 +71,9 @@ export class Render
                 // skip some pixels and set max bounces to 1 to speed up rendering when camera is moving
                 if(this._camera.isMoving && x % 2 == 0 && y % 2 == 0 && x % 4 != 0 && y % 4 != 0)
                 {
+                    this._rgbBuffer[(x + y * this._renderTarget.width) * 4] = this._clearColor[0] * 255;
+                    this._rgbBuffer[(x + y * this._renderTarget.width) * 4 + 1] = this._clearColor[1] * 255;
+                    this._rgbBuffer[(x + y * this._renderTarget.width) * 4 + 2] = this._clearColor[2] * 255;
                     this._scene.bounceLimit = 1;
                     continue;
                 }
