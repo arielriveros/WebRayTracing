@@ -447,6 +447,29 @@ export class UserInterface
         cubePosContainer.appendChild(cubeY);
         cubePosContainer.appendChild(cubeZ);
 
+        const cubeRotContainer = document.createElement("div");
+        cubeRotContainer.id = `cube-${index}-rot-container`;
+        cubeRotContainer.style.display = "flex";
+
+        const cubeRotLabel = document.createElement("label");
+        cubeRotLabel.htmlFor = `cube-${index}-rot`;
+        cubeRotLabel.innerText = `Rotation`;
+
+        cubeRotContainer.appendChild(cubeRotLabel);
+        const cubeRotX = this.setUpRotation(index, 'X', 'cube');
+        const cubeRotY = this.setUpRotation(index, 'Y', 'cube');
+        const cubeRotZ = this.setUpRotation(index, 'Z', 'cube');
+
+        cubeRotContainer.appendChild(cubeRotX);
+        cubeRotContainer.appendChild(cubeRotY);
+        cubeRotContainer.appendChild(cubeRotZ);
+
+        cubeContainer.appendChild(cubePosContainer);
+
+        cubeContainer.appendChild(cubeRotContainer);
+
+        
+
         const cubePropertiesContainer = document.createElement("div");
         cubePropertiesContainer.id = `cube-${index}-properties-container`;
         cubePropertiesContainer.style.display = "flex";
@@ -615,5 +638,22 @@ export class UserInterface
         return posInput;
     }
 
+    private setUpRotation(index:number, axis: 'X' | 'Y' | 'Z', type: string): HTMLInputElement
+    {
+        const rotInput = document.createElement("input");
+        rotInput.id = `rot-${type}-${index}-${axis.toLowerCase()}}`;
+        rotInput.type = "number";
+        rotInput.min = "-360";
+        rotInput.max = "360";
+        rotInput.step = "1";
+        rotInput.value = this._scene.objects[index].rotation[axis === 'X' ? 0 : axis === 'Y' ? 1 : 2].toString();
+        rotInput.style.width = "100%";
+        const axisIndex = axis === 'X' ? 0 : axis === 'Y' ? 1 : 2;
+        rotInput.addEventListener("input", (e) => {
+            this._scene.objects[index].rotation[axisIndex] = parseFloat((e.target as HTMLInputElement).value);
+        } );
+
+        return rotInput;
+    }
     public get dom(): HTMLDivElement { return this._dom; }
 }
