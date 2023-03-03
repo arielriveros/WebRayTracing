@@ -1,10 +1,11 @@
 import { vec3, vec4 } from "gl-matrix";
-import { hexToVec4, vec4ToHex } from "./utils";
+import { clearInner, hexToVec4, vec4ToHex } from "./utils";
 import { Scene } from "./scene";
 import { Sphere } from "./objects/volumes/sphere";
 import { Cube } from "./objects/volumes/cube";
 import { Plane } from "./objects/planes/plane";
 import { Render } from "./renderer";
+import { RenderObject } from "./objects/renderObject";
 
 export class UserInterface
 {
@@ -12,7 +13,7 @@ export class UserInterface
     private _scene!: Scene
     private _dom: HTMLDivElement;
 
-    constructor(scene: Scene)
+    constructor()
     {
         const uiContainer = document.createElement("div");
         uiContainer.id = "ui-container";
@@ -34,6 +35,7 @@ export class UserInterface
 
 
         this._dom = uiContainer;
+        
     }
 
     public start(renderer: Render): void
@@ -43,9 +45,46 @@ export class UserInterface
         this.setUpRenderSettings();
         this.setUpDirectionalLight();
         this.setUpBackgroundColor();
+        this.setUpAddButtons();
+
+        let selectedObjectContainer = document.createElement("selected-object-container") as HTMLDivElement;
+        selectedObjectContainer.id = "selected-object-container";
+        this._dom.appendChild(selectedObjectContainer);
+
+        let objectsListContainer = document.createElement("objects-list-container") as HTMLDivElement;
+        objectsListContainer.id = "objects-list-container";
+        this._dom.appendChild(objectsListContainer);
+
         this.setUpObjects();
     }
 
+    public setSelectedObject(object: RenderObject)
+    {
+        console.log("Test");
+        console.log(object);
+
+        if(document.getElementById("selected-object") !== null)
+            document.getElementById("selected-object")?.remove();
+
+        let currentSelectedObjectContainer = document.createElement("selected-object") as HTMLDivElement;
+        currentSelectedObjectContainer.id = "selected-object";
+
+        let index = this._scene.objects.indexOf(object);
+        switch(object.type)
+        {
+            case "sphere":
+                currentSelectedObjectContainer.appendChild(this.setUpSphere(index));
+                break;
+            case "cube":
+                currentSelectedObjectContainer.appendChild(this.setUpCube(index));
+                break;
+            case "plane":
+                currentSelectedObjectContainer.appendChild(this.setUpPlane(index));
+        }
+
+        document.getElementById("selected-object-container")?.appendChild(currentSelectedObjectContainer);
+    }
+    
     private setUpRenderSettings(): void
     {
         this.setUpMaxBounces();
@@ -203,44 +242,25 @@ export class UserInterface
 
     private setUpObjects(): void
     {
-        if(document.getElementById("objects-container") != null)
-            document.getElementById("objects-container")?.remove();
+        if(document.getElementById("objects-list") != null)
+            document.getElementById("objects-list")?.remove();
 
-        const objectsContainer = document.createElement("div");
-        objectsContainer.id = "objects-container";
+        let list = document.createElement("objects-list");
+        list.id = "objects-list";
 
-        const objectsLabel = document.createElement("label");
-        objectsLabel.htmlFor = "objects";
-        objectsLabel.innerText = "Objects";
-        objectsContainer.appendChild(objectsLabel);
+        this._scene.objects.forEach((item: RenderObject)=>{
+            let li = document.createElement("li");
+            li.innerText = item.type;
+            list.appendChild(li);
+        })
 
-        for(let i = 0; i < this._scene.objects.length; i++)
-        {
-            switch(this._scene.objects[i].type)
-            {
-                case "sphere":
-                    let sphereContainer = this.setUpSphere(i);
-                    objectsContainer.appendChild(sphereContainer);
-                    break;
-                case "cube":
-                    let cubeContainer = this.setUpCube(i);
-                    objectsContainer.appendChild(cubeContainer);
-                    break;
-                case "plane":
-                    let planeContainer = this.setUpPlane(i);
-                    objectsContainer.appendChild(planeContainer);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        this.setupAddButtons(objectsContainer);
-        
+        document.getElementById("objects-list-container")?.appendChild(list);
     }
 
-    private setupAddButtons(objectsContainer: HTMLDivElement ): void
+    private setUpAddButtons(): void
     {
+        let objectsContainer = document.createElement("div");
+
         const addSphereButton = document.createElement("button");
         addSphereButton.id = "add-sphere-button";
         addSphereButton.innerText = "Add Sphere";

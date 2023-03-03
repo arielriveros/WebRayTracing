@@ -317,6 +317,19 @@ export class Render
         return this.closestHit(ray, this._scene.objects.indexOf(closestObject), hitDistance);     
     }
 
+    public castScreenRay(x: number, y: number): RenderObject | null
+    {
+        let ray: Ray = new Ray();
+        ray.origin = this._camera.position;
+        ray.direction = this._camera.getRayDirection(x, y);
+
+        let hitData: HitData = this.traceRay(ray);
+        if(hitData.objectIndex == -1)
+            return null;
+
+        return this._scene.objects[hitData.objectIndex];
+    }
+
     public get renderTarget(): HTMLCanvasElement { return this._renderTarget; }
     public get scene(): Scene { return this._scene; }
 

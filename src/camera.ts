@@ -112,6 +112,11 @@ export class Camera
         }
     }
 
+    public getRayDirection(x: number, y: number)
+    {
+        return this._rayDirections[x + y * this._width];
+    }
+
     public get rayDirections(): vec3[] { return this._rayDirections; }
     public get position(): vec3 { return this._position; }
     public get rotation(): vec3 { return this._rotation; }

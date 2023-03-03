@@ -26,7 +26,7 @@ export class Application
 
         this._camera = new Camera({position: vec3.fromValues(0, 1, 3)});
         this._scene = new Scene({});
-        this._ui = new UserInterface(this._scene);
+        this._ui = new UserInterface();
         document.body.appendChild(this._ui.dom);
 
         this._scene.lightDir = vec3.normalize(vec3.create(), vec3.fromValues(1, 1, 1));
@@ -43,6 +43,11 @@ export class Application
         const plane = new Plane({color: COLORS.CYAN, size: 4});
         this._scene.addObject(plane);
 
+        this._renderer.renderTarget.addEventListener("mousedown", (e) => {
+            let object = this._renderer.castScreenRay(e.offsetX, e.offsetY);
+            if(object)
+                this._ui.setSelectedObject(object);
+        });
 
         // Move position on mouse move and clicking
         this._renderer.renderTarget.addEventListener("mousemove", (e) => {
