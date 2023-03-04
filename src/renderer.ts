@@ -69,7 +69,7 @@ export default class Renderer
             for(let x = 0; x < this._renderTarget.width; x++)
             {
                 // skip some pixels to speed up rendering when camera is moving
-                if(this._camera.isMoving && x % 2 == 0 && y % 2 == 0 && x % 4 != 0 && y % 4 != 0)
+                if(this._camera.isMoving && (x % 2 == 0 || y % 2 == 0))
                 {
                     this._rgbBuffer[(x + y * this._renderTarget.width) * 4] = this._clearColor[0] * 255;
                     this._rgbBuffer[(x + y * this._renderTarget.width) * 4 + 1] = this._clearColor[1] * 255;
@@ -127,18 +127,18 @@ export default class Renderer
 
             vec4.scaleAndAdd(finalColor, finalColor, color, reflectiveFactor);
 
+
             if(this._ambientOcclusion && !this._camera.isMoving)
             {
                 // ambient occlusion
                 let occlusion: number = 0;
-                const numSamples: number = 8;
+                const numSamples: number = 16;
                 const sampleRadius: number = 0.2;
                 const sampleOffset: vec3 = vec3.create();
                 const occlusionRay: Ray = new Ray();
     
                 for (let j = 0; j < numSamples; j++) {
-                    vec3.random(sampleOffset);
-                    vec3.scale(sampleOffset, sampleOffset, sampleRadius);
+                    vec3.random(sampleOffset, sampleRadius);
                     vec3.add(sampleOffset, sampleOffset, hitData.worldPosition);
                     vec3.sub(occlusionRay.direction, sampleOffset, hitData.worldPosition);
                     vec3.normalize(occlusionRay.direction, occlusionRay.direction);
@@ -150,21 +150,19 @@ export default class Renderer
                     );
     
                     const occlusionHitData = this.traceRay(occlusionRay);
-                    if (occlusionHitData.distance > 0.001) 
+                    if (occlusionHitData.distance > 0.001 && occlusionHitData.distance < vec3.distance(sampleOffset, hitData.worldPosition)) 
                     {
                         occlusion += 1.0;
                     }
                 }
     
                 occlusion /= numSamples;
-                const occlusionFactor: number = 0.5;
-                color[0] *= 1 - occlusion * occlusionFactor;
-                color[1] *= 1 - occlusion * occlusionFactor;
-                color[2] *= 1 - occlusion * occlusionFactor;
-    
-                vec4.scaleAndAdd(finalColor, finalColor, color, reflectiveFactor);
+                const occlusionFactor: number = 0.4;
+                finalColor[0] -= occlusion * occlusionFactor;
+                finalColor[1] -= occlusion * occlusionFactor;
+                finalColor[2] -= occlusion * occlusionFactor;
             }
-
+            
             if(this._directionalShadows && !this._camera.isMoving)
             {
                 // calculate shadow
@@ -172,9 +170,7 @@ export default class Renderer
                 shadowRay.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, this._bias);
                 // shador ray direction with random offset to artificially soften shadows
                 let randomOffset = vec3.create();
-                randomOffset[0] = Math.random() * this._shadowBias;
-                randomOffset[1] = Math.random() * this._shadowBias;
-                randomOffset[2] = Math.random() * this._shadowBias;
+                vec3.random(randomOffset, this._shadowBias);
                 shadowRay.direction = vec3.sub(vec3.create(), this._scene.lightDir, randomOffset);
                 shadowRay.direction = vec3.negate(shadowRay.direction, shadowRay.direction);
                 let shadowHitData = this.traceRay(shadowRay);
@@ -182,12 +178,12 @@ export default class Renderer
                 if(shadowHitData.distance > 0.007)
                 {
                     let shadowFactor: number = 0.5 * reflectiveFactor;
-                    
                     finalColor[0] -= shadowFactor;
                     finalColor[1] -= shadowFactor;
                     finalColor[2] -= shadowFactor;
                 }
             }
+
 
             if(this._reflections && this._bounceLimit > 1)
             {
