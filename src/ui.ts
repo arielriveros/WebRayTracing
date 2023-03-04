@@ -82,9 +82,69 @@ export class UserInterface
     
     private setUpRenderSettings(): void
     {
+        this.setupFeatures();
         this.setUpUpdateInterval();
         this.setUpMaxBounces();
         this.setUpShadowBias();
+    }
+
+    private setupFeatures(): void
+    {
+        const featuresContainer = document.createElement("div");
+        featuresContainer.id = "features-container";
+
+        const featuresLabel = document.createElement("label");
+        featuresLabel.htmlFor = "features";
+        featuresLabel.innerText = "Features";
+
+        featuresContainer.appendChild(featuresLabel);
+
+        const shadowsInput = document.createElement("input");
+        shadowsInput.id = "shadows";
+        shadowsInput.type = "checkbox";
+        shadowsInput.checked = this._renderer.directionalShadows;
+        shadowsInput.addEventListener("input", (e) => {
+            this._renderer.directionalShadows = (e.target as HTMLInputElement).checked;
+        });
+
+        const shadowsLabel = document.createElement("label");
+        shadowsLabel.htmlFor = "shadows";
+        shadowsLabel.innerText = "Shadows";
+
+        featuresContainer.appendChild(shadowsInput);
+        featuresContainer.appendChild(shadowsLabel);
+
+        const reflectionsInput = document.createElement("input");
+        reflectionsInput.id = "reflections";
+        reflectionsInput.type = "checkbox";
+        reflectionsInput.checked = this._renderer.reflections;
+        reflectionsInput.addEventListener("input", (e) => {
+            this._renderer.reflections = (e.target as HTMLInputElement).checked;
+        });
+
+        const reflectionsLabel = document.createElement("label");
+        reflectionsLabel.htmlFor = "reflections";
+        reflectionsLabel.innerText = "Reflections";
+
+        featuresContainer.appendChild(reflectionsInput);
+        featuresContainer.appendChild(reflectionsLabel);
+        
+        const aoInput = document.createElement("input");
+        aoInput.id = "ao";
+        aoInput.type = "checkbox";
+        aoInput.checked = this._renderer.ambientOcclusion;
+        aoInput.addEventListener("input", (e) => {
+            this._renderer.ambientOcclusion = (e.target as HTMLInputElement).checked;
+        });
+
+        const aoLabel = document.createElement("label");
+        aoLabel.htmlFor = "ao";
+        aoLabel.innerText = "Ambient Occlusion";
+
+        featuresContainer.appendChild(aoInput);
+        featuresContainer.appendChild(aoLabel);
+        
+        this._dom.appendChild(featuresContainer);
     }
 
     private setUpUpdateInterval(): void

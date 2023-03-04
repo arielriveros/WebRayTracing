@@ -228,11 +228,9 @@ export default class Renderer
         let closestObject: RenderObject | null = null;
         let hitDistance: number = Number.MAX_VALUE;
 
-        let origin: vec3 = vec3.create();
         for(let object of this._scene.objects)
         {
             let t: number = Number.MAX_VALUE;
-            vec3.sub(origin, ray.origin, object.position);
             {
                 if(object.type === 'plane')
                 {
@@ -262,6 +260,7 @@ export default class Renderer
                 if(object.type === 'sphere')
                 {
                     let sphere = object as OBJECTS.Sphere;
+                    let origin = vec3.sub(vec3.create(), ray.origin, object.position);
 
                     let a: number = vec3.dot(ray.direction, ray.direction);
                     let b: number = 2.0 * vec3.dot(origin, ray.direction);
@@ -282,6 +281,7 @@ export default class Renderer
                 if(object.type === 'cube')
                 {
                     let cube = object as OBJECTS.Cube;
+                    let origin = vec3.sub(vec3.create(), ray.origin, object.position);
 
                     let tmin: number = (cube.min[0] - origin[0]) / ray.direction[0];
                     let tmax: number = (cube.max[0] - origin[0]) / ray.direction[0];
@@ -373,4 +373,13 @@ export default class Renderer
 
     public get updateInterval(): number { return this._updateInterval; }
     public set updateInterval(value: number) { this._updateInterval = value; }
+
+    public get directionalShadows(): boolean { return this._directionalShadows; }
+    public set directionalShadows(value: boolean) { this._directionalShadows = value; }
+
+    public get reflections(): boolean { return this._reflections; }
+    public set reflections(value: boolean) { this._reflections = value; }
+
+    public get ambientOcclusion(): boolean { return this._ambientOcclusion; }
+    public set ambientOcclusion(value: boolean) { this._ambientOcclusion = value; }
 }
