@@ -36,6 +36,9 @@ export class Render
     private _bounceLimit: number = 1;
     private _previousBoundceLimit: number = 1;
     private _shadowBias: number = 0.02;
+    private _lastUpdate: number = 0;
+    private _updateInterval: number = 10;
+
     
     constructor(canvasId: string)
     {
@@ -65,7 +68,10 @@ export class Render
     }
 
     public render(): void {
-        let color: vec4;
+
+        this._lastUpdate++;
+        if(this._lastUpdate % this._updateInterval !== 0 && this._updateInterval !== 0)
+            return;
 
         if(this._camera.isMoving)
             this._bounceLimit = 1;
@@ -85,7 +91,7 @@ export class Render
                     continue;
                 }
                 
-                color = this.rayGen(x, y);
+                let color: vec4 = this.rayGen(x, y);
                 
                 let index = (x + y * this._renderTarget.width) * 4;
                 this._rgbBuffer[index]     = color[0] * 255;
@@ -340,4 +346,7 @@ export class Render
 
     public get shadowBias(): number { return this._shadowBias; }
     public set shadowBias(value: number) { this._shadowBias = value; }
+
+    public get updateInterval(): number { return this._updateInterval; }
+    public set updateInterval(value: number) { this._updateInterval = value; }
 }

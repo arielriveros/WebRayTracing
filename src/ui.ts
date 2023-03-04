@@ -87,24 +87,47 @@ export class UserInterface
     
     private setUpRenderSettings(): void
     {
+        this.setUpUpdateInterval();
         this.setUpMaxBounces();
         this.setUpShadowBias();
+    }
+
+    private setUpUpdateInterval(): void
+    {
+        const updateIntervalContainer = document.createElement("div");
+        updateIntervalContainer.id = "update-interval-container";
+
+        const updateIntervalLabel = document.createElement("label");
+        updateIntervalLabel.htmlFor = "updateInterval";
+        updateIntervalLabel.innerText = "Skip Frames";
+
+        updateIntervalContainer.appendChild(updateIntervalLabel);
+
+        const updateIntervalInput = document.createElement("input");
+        updateIntervalInput.id = "updateInterval";
+        updateIntervalInput.type = "number";
+        updateIntervalInput.min = "0";
+        updateIntervalInput.max = "60";
+        updateIntervalInput.value = this._renderer.updateInterval.toString();
+        updateIntervalInput.addEventListener("input", (e) => {
+            this._renderer.updateInterval = (e.target as HTMLInputElement).valueAsNumber;
+        });
+
+        updateIntervalContainer.appendChild(updateIntervalInput);
+
+        this._dom.appendChild(updateIntervalContainer);
     }
 
     private setUpMaxBounces(): void
     {
         const maxBouncesContainer = document.createElement("div");
         maxBouncesContainer.id = "max-bounces-container";
-        maxBouncesContainer.style.border = "1px solid black";
 
         const maxBouncesLabel = document.createElement("label");
         maxBouncesLabel.htmlFor = "maxBounces";
         maxBouncesLabel.innerText = "Max Bounces";
 
         maxBouncesContainer.appendChild(maxBouncesLabel);
-
-        const breakLine = document.createElement("br");
-        maxBouncesContainer.appendChild(breakLine);
 
         const maxBouncesInput = document.createElement("input");
         maxBouncesInput.id = "maxBounces";
@@ -125,16 +148,12 @@ export class UserInterface
     {
         const shadowBiasContainer = document.createElement("div");
         shadowBiasContainer.id = "shadow-bias-container";
-        shadowBiasContainer.style.border = "1px solid black";
 
         const shadowBiasLabel = document.createElement("label");
         shadowBiasLabel.htmlFor = "shadowBias";
         shadowBiasLabel.innerText = "Shadow Bias";
 
         shadowBiasContainer.appendChild(shadowBiasLabel);
-
-        const breakLine = document.createElement("br");
-        shadowBiasContainer.appendChild(breakLine);
 
         const shadowBiasInput = document.createElement("input");
         shadowBiasInput.id = "shadowBias";
