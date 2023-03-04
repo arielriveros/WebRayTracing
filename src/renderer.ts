@@ -22,6 +22,9 @@ export default class Renderer
     private _lastUpdate: number = 0;
     private _updateInterval: number = 10;
 
+    private _directionalShadows: boolean = true;
+    private _reflections: boolean = true;
+    private _ambientOcclusion: boolean = true;
     
     constructor(canvasId: string)
     {
@@ -124,7 +127,45 @@ export default class Renderer
 
             vec4.scaleAndAdd(finalColor, finalColor, color, reflectiveFactor);
 
-            if(!this._camera.isMoving)
+            if(this._ambientOcclusion && !this._camera.isMoving)
+            {
+                // ambient occlusion
+                let occlusion: number = 0;
+                const numSamples: number = 8;
+                const sampleRadius: number = 0.2;
+                const sampleOffset: vec3 = vec3.create();
+                const occlusionRay: Ray = new Ray();
+    
+                for (let j = 0; j < numSamples; j++) {
+                    vec3.random(sampleOffset);
+                    vec3.scale(sampleOffset, sampleOffset, sampleRadius);
+                    vec3.add(sampleOffset, sampleOffset, hitData.worldPosition);
+                    vec3.sub(occlusionRay.direction, sampleOffset, hitData.worldPosition);
+                    vec3.normalize(occlusionRay.direction, occlusionRay.direction);
+                    vec3.scaleAndAdd(
+                        occlusionRay.origin,
+                        hitData.worldPosition,
+                        hitData.worldNormal,
+                        this._bias
+                    );
+    
+                    const occlusionHitData = this.traceRay(occlusionRay);
+                    if (occlusionHitData.distance > 0.001) 
+                    {
+                        occlusion += 1.0;
+                    }
+                }
+    
+                occlusion /= numSamples;
+                const occlusionFactor: number = 0.5;
+                color[0] *= 1 - occlusion * occlusionFactor;
+                color[1] *= 1 - occlusion * occlusionFactor;
+                color[2] *= 1 - occlusion * occlusionFactor;
+    
+                vec4.scaleAndAdd(finalColor, finalColor, color, reflectiveFactor);
+            }
+
+            if(this._directionalShadows && !this._camera.isMoving)
             {
                 // calculate shadow
                 let shadowRay = new Ray();
@@ -148,7 +189,7 @@ export default class Renderer
                 }
             }
 
-            if(this._bounceLimit > 1)
+            if(this._reflections && this._bounceLimit > 1)
             {
                 reflectiveFactor *= 0.4;
     
