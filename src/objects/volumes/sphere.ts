@@ -1,5 +1,5 @@
 import { vec3, vec4 } from "gl-matrix";
-import { RenderObject } from "../renderObject";
+import RenderObject from "../renderObject";
 
 interface SphereParameters
 {

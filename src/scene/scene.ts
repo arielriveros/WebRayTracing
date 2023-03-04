@@ -1,7 +1,7 @@
 import { vec3, vec4 } from "gl-matrix";
-import { COLORS } from "./utils";
-import { RenderObject } from "./objects/renderObject";
-import { Render } from "./renderer";
+import { COLORS } from "../utils";
+import RenderObject from "../objects/renderObject";
+import Renderer from "../renderer";
 
 interface SceneParameters
 {
@@ -10,13 +10,13 @@ interface SceneParameters
     backgroundColor?: vec4;
 }
 
-export class Scene
+export default class Scene
 {
     private _objects: Array<RenderObject>;
     private _lightDir: vec3;
     private _ambientLight: number;
     private _backgroundColor: vec4;
-    private _renderer!: Render;
+    private _renderer!: Renderer;
 
     constructor({lightDir = vec3.fromValues(0, 1, 0), ambientLight = 0.1, backgroundColor = COLORS.BLACK}: SceneParameters)
     {
@@ -48,6 +48,6 @@ export class Scene
             this._objects.splice(index, 1);
     }
 
-    public get renderer(): Render { return this._renderer; }
-    public set renderer(renderer: Render) { this._renderer = renderer; }
+    public get renderer(): Renderer { return this._renderer; }
+    public set renderer(renderer: Renderer) { this._renderer = renderer; }
 }

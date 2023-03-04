@@ -1,29 +1,12 @@
 import { vec3, vec4} from "gl-matrix";
-import { Camera } from "./camera";
-import { Scene } from "./scene";
-import { Sphere } from "./objects/volumes/sphere";
-import { Ray } from "./ray";
-import { RenderObject } from "./objects/renderObject";
-import { Cube } from "./objects/volumes/cube";
-import { Plane } from "./objects/planes/plane";
+import Camera from "./scene/camera";
+import Scene from "./scene/scene";
+import Ray from "./ray/ray";
+import RenderObject from "./objects/renderObject";
+import HitData from "./ray/hitData";
+import * as OBJECTS from "./objects/objects";
 
-class HitData
-{
-    public distance: number;
-    public worldPosition: vec3;
-    public worldNormal: vec3;
-    public objectIndex: number;
-
-    constructor()
-    {
-        this.distance = -1;
-        this.worldPosition = vec3.create();
-        this.worldNormal = vec3.create();
-        this.objectIndex = Number.MAX_VALUE;
-    }
-}
-
-export class Render
+export default class Renderer
 {
     private _renderTarget: HTMLCanvasElement;
     private _renderContext: CanvasRenderingContext2D;
@@ -212,7 +195,7 @@ export class Render
             {
                 if(object.type === 'plane')
                 {
-                    let plane = object as Plane;
+                    let plane = object as OBJECTS.Plane;
 
                     let denom: number = vec3.dot(plane.normal, ray.direction);
                     if(denom > 0.0001)
@@ -229,7 +212,7 @@ export class Render
                             if(u >= plane.uMin && u <= plane.uMax && v >= plane.vMin && v <= plane.vMax)
                             {
                                 hitDistance = t;
-                                closestObject = plane as Plane;
+                                closestObject = plane as OBJECTS.Plane;
                             }
                         }
                     }
@@ -237,7 +220,7 @@ export class Render
 
                 if(object.type === 'sphere')
                 {
-                    let sphere = object as Sphere;
+                    let sphere = object as OBJECTS.Sphere;
 
                     let a: number = vec3.dot(ray.direction, ray.direction);
                     let b: number = 2.0 * vec3.dot(origin, ray.direction);
@@ -251,13 +234,13 @@ export class Render
                     if(t < hitDistance && t > 0.0)
                     {
                         hitDistance = t;
-                        closestObject = sphere as Sphere;
+                        closestObject = sphere as OBJECTS.Sphere;
                     }
                 }
 
                 if(object.type === 'cube')
                 {
-                    let cube = object as Cube;
+                    let cube = object as OBJECTS.Cube;
 
                     let tmin: number = (cube.min[0] - origin[0]) / ray.direction[0];
                     let tmax: number = (cube.max[0] - origin[0]) / ray.direction[0];
@@ -310,7 +293,7 @@ export class Render
                     if(tmin < hitDistance && tmin > 0.0)
                     {   
                         hitDistance = tmin;
-                        closestObject = cube as Cube;
+                        closestObject = cube as OBJECTS.Cube;
                     }
                     
                 }

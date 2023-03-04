@@ -1,15 +1,13 @@
 import { vec3, vec4 } from "gl-matrix";
-import { clearInner, hexToVec4, vec4ToHex } from "./utils";
-import { Scene } from "./scene";
-import { Sphere } from "./objects/volumes/sphere";
-import { Cube } from "./objects/volumes/cube";
-import { Plane } from "./objects/planes/plane";
-import { Render } from "./renderer";
-import { RenderObject } from "./objects/renderObject";
+import { hexToVec4, vec4ToHex } from "./utils";
+import Scene from "./scene/scene";
+import Renderer from "./renderer";
+import RenderObject from "./objects/renderObject";
+import * as OBJECTS from "./objects/objects";
 
 export class UserInterface
 {
-    private _renderer!: Render;
+    private _renderer!: Renderer;
     private _scene!: Scene
     private _dom: HTMLDivElement;
 
@@ -38,7 +36,7 @@ export class UserInterface
         
     }
 
-    public start(renderer: Render): void
+    public start(renderer: Renderer): void
     {
         this._renderer = renderer;
         this._scene = renderer.scene;
@@ -60,9 +58,6 @@ export class UserInterface
 
     public setSelectedObject(object: RenderObject)
     {
-        console.log("Test");
-        console.log(object);
-
         if(document.getElementById("selected-object") !== null)
             document.getElementById("selected-object")?.remove();
 
@@ -284,7 +279,7 @@ export class UserInterface
         addSphereButton.id = "add-sphere-button";
         addSphereButton.innerText = "Add Sphere";
         addSphereButton.addEventListener("click", () => {
-            this._scene.addObject(new Sphere({radius: 0.25}));
+            this._scene.addObject(new OBJECTS.Sphere({radius: 0.25}));
             this.setUpObjects();
         });
 
@@ -294,7 +289,7 @@ export class UserInterface
         addRandomSphereButton.id = "add-random-sphere-button";
         addRandomSphereButton.innerText = "Add Random Sphere";
         addRandomSphereButton.addEventListener("click", () => {
-            this._scene.addObject(new Sphere({
+            this._scene.addObject(new OBJECTS.Sphere({
                 position: vec3.fromValues(
                     Math.random() * 2 - 1,
                     Math.random() * 2 - 1,
@@ -317,7 +312,7 @@ export class UserInterface
         addCubeButton.id = "add-cube-button";
         addCubeButton.innerText = "Add Cube";
         addCubeButton.addEventListener("click", () => {
-            this._scene.addObject(new Cube({size: 0.25}));
+            this._scene.addObject(new OBJECTS.Cube({size: 0.25}));
             this.setUpObjects();
         });
 
@@ -327,7 +322,7 @@ export class UserInterface
         addRandomCubeButton.id = "add-random-cube-button";
         addRandomCubeButton.innerText = "Add Random Cube";
         addRandomCubeButton.addEventListener("click", () => {
-            this._scene.addObject(new Cube({
+            this._scene.addObject(new OBJECTS.Cube({
                 position: vec3.fromValues(
                     Math.random() * 2 - 1,
                     Math.random() * 2 - 1,
@@ -400,10 +395,10 @@ export class UserInterface
         sphereRadius.min = "0";
         sphereRadius.max = "1";
         sphereRadius.step = "0.01";
-        sphereRadius.value = (this._scene.objects[index] as Sphere).radius?.toString();
+        sphereRadius.value = (this._scene.objects[index] as OBJECTS.Sphere).radius?.toString();
         sphereRadius.style.width = "100%";
         sphereRadius.addEventListener("input", (e) => {
-            (this._scene.objects[index] as Sphere).radius = parseFloat((e.target as HTMLInputElement).value);
+            (this._scene.objects[index] as OBJECTS.Sphere).radius = parseFloat((e.target as HTMLInputElement).value);
         });
 
         const sphereRadiusLabel = document.createElement("label");
@@ -519,10 +514,10 @@ export class UserInterface
         cubeSize.min = "0";
         cubeSize.max = "1";
         cubeSize.step = "0.01";
-        cubeSize.value = (this._scene.objects[index] as Cube).size?.toString();
+        cubeSize.value = (this._scene.objects[index] as OBJECTS.Cube).size?.toString();
         cubeSize.style.width = "100%";
         cubeSize.addEventListener("input", (e) => {
-            (this._scene.objects[index] as Cube).size = parseFloat((e.target as HTMLInputElement).value);
+            (this._scene.objects[index] as OBJECTS.Cube).size = parseFloat((e.target as HTMLInputElement).value);
         });
 
         const cubeSizeLabel = document.createElement("label");
@@ -615,10 +610,10 @@ export class UserInterface
         planeSize.min = "0";
         planeSize.max = "10";
         planeSize.step = "0.5";
-        planeSize.value = (this._scene.objects[index] as Plane).size?.toString();
+        planeSize.value = (this._scene.objects[index] as OBJECTS.Plane).size?.toString();
         planeSize.style.width = "100%";
         planeSize.addEventListener("input", (e) => {
-            (this._scene.objects[index] as Plane).size = parseFloat((e.target as HTMLInputElement).value);
+            (this._scene.objects[index] as OBJECTS.Plane).size = parseFloat((e.target as HTMLInputElement).value);
         });
         
         const planeSizeLabel = document.createElement("label");

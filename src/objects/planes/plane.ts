@@ -1,5 +1,5 @@
-import { vec2, vec3, vec4 } from "gl-matrix";
-import { RenderObject } from "../renderObject";
+import { vec3, vec4 } from "gl-matrix";
+import RenderObject from "../renderObject";
 
 interface PlaneParameters
 {
@@ -8,34 +8,6 @@ interface PlaneParameters
     color?: vec4;
     size?: number;
 }
-
-/*
-export class Plane extends RenderObject
-{
-    private _size: number;
-    private _normal: vec3;
-    constructor({position = vec3.create(), rotation = vec3.create(), color = vec4.fromValues(1, 1, 1, 1), size = 1}: PlaneParameters)
-    {
-        super(position, rotation, color, 'plane');
-        this._size = size;
-        this._normal = vec3.fromValues(0, 1, 0);
-    }
-
-    public get size(): number { return this._size; }
-    public set size(value: number) { this._size = value; }
-
-    public get normal(): vec3 { 
-        this._normal = vec3.normalize(this._normal, vec3.inverse(vec3.create(), this.position));
-
-
-        return this._normal;
-    }
-
-    public override getNormalAtPoint(point: vec3): vec3 {
-        return vec3.fromValues(0, 1, 0);
-    }
-
-} */
 
 export class Plane extends RenderObject
 {

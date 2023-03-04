@@ -1,6 +1,6 @@
 import { vec3 } from "gl-matrix";
 
-export class Ray
+export default class Ray
 {
     private _origin: vec3;
     private _direction: vec3;

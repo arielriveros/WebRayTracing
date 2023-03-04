@@ -1,17 +1,15 @@
-import { vec2, vec3 } from "gl-matrix";
-import { Camera } from "./camera";
-import { Render } from "./renderer";
-import { Scene } from "./scene";
+import { vec3 } from "gl-matrix";
+import Camera from "./scene/camera";
+import Renderer from "./renderer";
+import Scene from "./scene/scene";
 import { COLORS } from "./utils";
 import Stats from "stats.js";
-import { Sphere } from "./objects/volumes/sphere";
 import { UserInterface } from "./ui";
-import { Cube } from "./objects/volumes/cube";
-import { Plane } from "./objects/planes/plane";
+import * as OBJECTS from "./objects/objects";
 
 export class Application
 {
-    private _renderer: Render;
+    private _renderer: Renderer;
     private _camera: Camera;
     private _scene: Scene;
     private _ui: UserInterface;
@@ -19,7 +17,7 @@ export class Application
 
     constructor()
     {
-        this._renderer = new Render("raytracer-canvas");
+        this._renderer = new Renderer("raytracer-canvas");
         this._stats = new Stats();
         this._stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
         document.body.appendChild( this._stats.dom );
@@ -32,7 +30,7 @@ export class Application
         this._scene.lightDir = vec3.normalize(vec3.create(), vec3.fromValues(1, 1, 1));
         
         // Add a sphere
-        const sphere = new Sphere({position: vec3.fromValues(0, -1, 0), radius: 0.5, color: COLORS.RED});
+        const sphere = new OBJECTS.Sphere({position: vec3.fromValues(0, -1, 0), radius: 0.5, color: COLORS.RED});
         this._scene.addObject(sphere);
 
         // Add a cube
@@ -40,7 +38,7 @@ export class Application
         //this._scene.addObject(cube);
 
         // Add a plane
-        const plane = new Plane({color: COLORS.CYAN, size: 4});
+        const plane = new OBJECTS.Plane({color: COLORS.CYAN, size: 4});
         this._scene.addObject(plane);
 
         this._renderer.renderTarget.addEventListener("mousedown", (e) => {

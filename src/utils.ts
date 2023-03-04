@@ -35,19 +35,3 @@ export namespace COLORS
     export const BROWN: vec4 = [0.5, 0.25, 0, 1] as vec4;
     export const PINK: vec4 = [1, 0.75, 0.8, 1] as vec4;    
 }
-
-export function clearInner(node: HTMLElement) {
-    while (node.hasChildNodes()) {
-        if(node.firstChild)
-            clear(node.firstChild as HTMLElement);
-    }
-  }
-  
-function clear(node: HTMLElement) {
-    while (node.hasChildNodes()) {
-        if(node.firstChild)
-            clear(node.firstChild as HTMLElement);
-    }
-    if(node.parentNode)
-        node.parentNode.removeChild(node);
-  }

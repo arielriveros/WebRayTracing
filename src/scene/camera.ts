@@ -9,7 +9,7 @@ interface CameraParameters
     far?: number
 }
 
-export class Camera
+export default class Camera
 {
     private _height!: number;
     private _width!: number;

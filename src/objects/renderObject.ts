@@ -2,7 +2,7 @@ import { vec3, vec4 } from "gl-matrix";
 
 type Geometry = 'sphere' | 'cube' | 'plane';
 
-export abstract class RenderObject
+export default abstract class RenderObject
 {
     private _position: vec3;
     private _rotation: vec3;
