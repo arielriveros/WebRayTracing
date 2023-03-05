@@ -1,6 +1,6 @@
 html, body {
-    display: flex;
-    margin: 0;
+    display: block;
+    margin: 1;
     padding: 0;
     overflow: hidden;
 }

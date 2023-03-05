@@ -7,12 +7,14 @@ import * as OBJECTS from "./objects/objects";
 
 export class UserInterface
 {
+    private _appContainer: HTMLDivElement;
     private _renderer!: Renderer;
     private _scene!: Scene
     private _dom: HTMLDivElement;
 
-    constructor()
+    constructor(appContainer: HTMLDivElement)
     {
+        this._appContainer = appContainer;
         const uiContainer = document.createElement("div");
         uiContainer.id = "ui-container";
         uiContainer.style.backgroundColor = "#333333";
@@ -22,18 +24,14 @@ export class UserInterface
         uiContainer.style.fontWeight = "bold";
         uiContainer.style.textShadow = "0px 0px 1px black";
         uiContainer.style.padding = "10px";
-        uiContainer.style.overflowY = "scroll";
-        uiContainer.style.overflowX = "hidden";
-        uiContainer.style.position = "absolute";
-        uiContainer.style.top = "0px";
-        uiContainer.style.right = "0px";
-        uiContainer.style.width = "300px";
-        uiContainer.style.height = "100%";
+        uiContainer.style.position = "fixed";
+        uiContainer.style.left = appContainer.offsetWidth + "px";
+        uiContainer.style.width = "150px";
         uiContainer.style.zIndex = "100";
 
 
         this._dom = uiContainer;
-        
+        this._appContainer.appendChild(uiContainer);
     }
 
     public start(renderer: Renderer): void
@@ -56,13 +54,16 @@ export class UserInterface
         this.setUpObjects();
     }
 
-    public setSelectedObject(object: RenderObject)
+    public setSelectedObject(object: RenderObject | null)
     {
         if(document.getElementById("selected-object") !== null)
             document.getElementById("selected-object")?.remove();
 
         let currentSelectedObjectContainer = document.createElement("selected-object") as HTMLDivElement;
         currentSelectedObjectContainer.id = "selected-object";
+
+        if(object === null)
+            return;
 
         let index = this._scene.objects.indexOf(object);
         switch(object.type)
@@ -77,6 +78,7 @@ export class UserInterface
                 currentSelectedObjectContainer.appendChild(this.setUpPlane(index));
         }
 
+        this._appContainer.appendChild(currentSelectedObjectContainer);
         document.getElementById("selected-object-container")?.appendChild(currentSelectedObjectContainer);
     }
     
@@ -343,7 +345,7 @@ export class UserInterface
             list.appendChild(li);
         })
 
-        document.getElementById("objects-list-container")?.appendChild(list);
+        //document.getElementById("objects-list-container")?.appendChild(list);
     }
 
     private setUpAddButtons(): void
@@ -438,6 +440,7 @@ export class UserInterface
         sphereRemoveButton.innerText = "Remove";
         sphereRemoveButton.addEventListener("click", () => {
             this._scene.removeObject(index);
+            this.setSelectedObject(null);
             this.setUpObjects();
         });
 
@@ -534,6 +537,7 @@ export class UserInterface
         cubeRemoveButton.innerText = "Remove";
         cubeRemoveButton.addEventListener("click", () => {
             this._scene.removeObject(index);
+            this.setSelectedObject(null);
             this.setUpObjects();
         });
 
@@ -653,6 +657,7 @@ export class UserInterface
         planeRemoveButton.innerText = "Remove";
         planeRemoveButton.addEventListener("click", () => {
             this._scene.removeObject(index);
+            this.setSelectedObject(null);
             this.setUpObjects();
         });
 

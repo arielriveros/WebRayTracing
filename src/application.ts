@@ -9,6 +9,7 @@ import * as OBJECTS from "./objects/objects";
 
 export class Application
 {
+    private _appContainer: HTMLDivElement;
     private _renderer: Renderer;
     private _camera: Camera;
     private _scene: Scene;
@@ -17,15 +18,24 @@ export class Application
 
     constructor()
     {
-        this._renderer = new Renderer("raytracer-canvas");
+        let container = document.getElementById("raytracer") as HTMLDivElement;
+        if(container == null)
+            throw new Error(`HTML element with id 'raytracer' not found`);
+
+        this._appContainer = container;
+        this._appContainer.style.display = "flex";
+
+        this._renderer = new Renderer(this._appContainer);
         this._stats = new Stats();
         this._stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-        document.body.appendChild( this._stats.dom );
 
         this._camera = new Camera({position: vec3.fromValues(0, 1, 3)});
         this._scene = new Scene({});
-        this._ui = new UserInterface();
-        document.body.appendChild(this._ui.dom);
+        this._ui = new UserInterface(this._appContainer);
+        this._stats.dom.style.position = "relative";
+        this._stats.dom.style.zIndex = "100";
+
+        document.getElementById("raytracer")?.appendChild(this._stats.dom);
 
         this._scene.lightDir = vec3.normalize(vec3.create(), vec3.fromValues(1, 1, 1));
         

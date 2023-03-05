@@ -11,6 +11,8 @@ export default class Renderer
     private _renderTarget: HTMLCanvasElement;
     private _renderContext: CanvasRenderingContext2D;
     private _rgbBuffer: Uint8ClampedArray;
+    private _width: number = 640;
+    private _height: number = 480;
     private _image!: ImageData;
     private _scene!: Scene;
     private _camera!: Camera;
@@ -27,15 +29,20 @@ export default class Renderer
     private _reflections: boolean = true;
     private _ambientOcclusion: boolean = false;
     
-    constructor(canvasId: string)
+    constructor(appContainer: HTMLDivElement)
     {
-        if(document.getElementById(canvasId) as HTMLCanvasElement == null)
-            throw new Error("Canvas element 'raytracer-canvas' not found");
-
-        this._renderTarget = document.getElementById(canvasId) as HTMLCanvasElement;
+        
+        this._renderTarget = document.createElement("canvas") as HTMLCanvasElement;
         this._renderContext = this._renderTarget.getContext("2d") as CanvasRenderingContext2D;
-        if(this._renderTarget.height == 0 || this._renderTarget.width == 0 || this._renderTarget.height == null || this._renderTarget.width == null)
-            throw new Error("Canvas element 'raytracer-canvas' has no size");
+        this._renderTarget.width = this._width;
+        this._renderTarget.height = this._height;
+
+        // Set the canvas to be behind the UI
+        this._renderTarget.style.position = "absolute";
+        this._renderTarget.style.zIndex = "-1";
+
+        appContainer.appendChild(this._renderTarget);
+        appContainer.style.width = `${this._width}px`;
         
         // Array containing color data for each pixel [r_0, g_0, b_0, a_0, r_1, g_1, ... , a_width*height*4-1]
         this._rgbBuffer = new Uint8ClampedArray(this._renderTarget.width * this._renderTarget.height * 4);
