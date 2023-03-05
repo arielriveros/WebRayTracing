@@ -1,9 +1,9 @@
 import { vec3, vec4 } from "gl-matrix";
-import { hexToVec4, vec4ToHex } from "./utils";
-import Scene from "./scene/scene";
-import Renderer from "./renderer";
-import RenderObject from "./objects/renderObject";
-import * as OBJECTS from "./objects/objects";
+import { hexToVec4, vec4ToHex } from "../utils";
+import Scene from "../scene/scene";
+import Renderer from "../renderer";
+import RenderObject from "../objects/renderObject";
+import * as OBJECTS from "../objects/objects";
 
 export class UserInterface
 {
@@ -50,8 +50,6 @@ export class UserInterface
         let objectsListContainer = document.createElement("objects-list-container") as HTMLDivElement;
         objectsListContainer.id = "objects-list-container";
         this._dom.appendChild(objectsListContainer);
-
-        this.setUpObjects();
     }
 
     public setSelectedObject(object: RenderObject | null)
@@ -323,23 +321,6 @@ export class UserInterface
 
     }
 
-    private setUpObjects(): void
-    {
-        if(document.getElementById("objects-list") != null)
-            document.getElementById("objects-list")?.remove();
-
-        let list = document.createElement("objects-list");
-        list.id = "objects-list";
-
-        this._scene.objects.forEach((item: RenderObject)=>{
-            let li = document.createElement("li");
-            li.innerText = item.type;
-            list.appendChild(li);
-        })
-
-        //document.getElementById("objects-list-container")?.appendChild(list);
-    }
-
     private setUpAddButtons(): void
     {
         let objectsContainer = document.createElement("div");
@@ -349,7 +330,6 @@ export class UserInterface
         addSphereButton.innerText = "Add Sphere";
         addSphereButton.addEventListener("click", () => {
             this._scene.addObject(new OBJECTS.Sphere({radius: 0.25}));
-            this.setUpObjects();
         });
 
         objectsContainer.appendChild(addSphereButton);
@@ -372,7 +352,6 @@ export class UserInterface
                     1
                 )
             }));
-            this.setUpObjects();
         });
 
         objectsContainer.appendChild(addRandomSphereButton);
@@ -382,7 +361,6 @@ export class UserInterface
         addCubeButton.innerText = "Add Cube";
         addCubeButton.addEventListener("click", () => {
             this._scene.addObject(new OBJECTS.Cube({size: 0.25}));
-            this.setUpObjects();
         });
 
         objectsContainer.appendChild(addCubeButton);
@@ -405,7 +383,6 @@ export class UserInterface
                     1
                 )
             }));
-            this.setUpObjects();
         });
 
         objectsContainer.appendChild(addRandomCubeButton);
@@ -433,27 +410,9 @@ export class UserInterface
         sphereRemoveButton.addEventListener("click", () => {
             this._scene.removeObject(index);
             this.setSelectedObject(null);
-            this.setUpObjects();
         });
 
         sphereContainer.appendChild(sphereRemoveButton);
-
-        const spherePosContainer = document.createElement("div");
-        spherePosContainer.id = `sphere-${index}-pos-container`;
-        spherePosContainer.style.display = "flex";
-
-        const spherePosLabel = document.createElement("label");
-        spherePosLabel.htmlFor = `sphere-${index}-pos`;
-        spherePosLabel.innerText = `Position`;
-
-        spherePosContainer.appendChild(spherePosLabel);
-        const sphereX = this.setUpPosition(index, 'X', 'sphere');
-        const sphereY = this.setUpPosition(index, 'Y', 'sphere');
-        const sphereZ = this.setUpPosition(index, 'Z', 'sphere');
-
-        spherePosContainer.appendChild(sphereX);
-        spherePosContainer.appendChild(sphereY);
-        spherePosContainer.appendChild(sphereZ);
 
         const spherePropertiesContainer = document.createElement("div");
         spherePropertiesContainer.id = `sphere-${index}-properties-container`;
@@ -503,8 +462,7 @@ export class UserInterface
 
         spherePropertiesContainer.appendChild(sphereRadiusContainer);
         spherePropertiesContainer.appendChild(sphereColorContainer);
-        
-        sphereContainer.appendChild(spherePosContainer);
+
         sphereContainer.appendChild(spherePropertiesContainer);
 
         return sphereContainer;
@@ -520,7 +478,7 @@ export class UserInterface
 
         const cubeLabel = document.createElement("label");
         cubeLabel.htmlFor = `cube-${index}`;
-        cubeLabel.innerText = `cube ${index}`;
+        cubeLabel.innerText = `Cube ${index}`;
 
         cubeContainer.appendChild(cubeLabel);
 
@@ -530,50 +488,9 @@ export class UserInterface
         cubeRemoveButton.addEventListener("click", () => {
             this._scene.removeObject(index);
             this.setSelectedObject(null);
-            this.setUpObjects();
         });
 
         cubeContainer.appendChild(cubeRemoveButton);
-
-        const cubePosContainer = document.createElement("div");
-        cubePosContainer.id = `cube-${index}-pos-container`;
-        cubePosContainer.style.display = "flex";
-
-        const cubePosLabel = document.createElement("label");
-        cubePosLabel.htmlFor = `cube-${index}-pos`;
-        cubePosLabel.innerText = `Position`;
-
-        cubePosContainer.appendChild(cubePosLabel);
-        const cubeX = this.setUpPosition(index, 'X', 'cube');
-        const cubeY = this.setUpPosition(index, 'Y', 'cube');
-        const cubeZ = this.setUpPosition(index, 'Z', 'cube');
-
-        cubePosContainer.appendChild(cubeX);
-        cubePosContainer.appendChild(cubeY);
-        cubePosContainer.appendChild(cubeZ);
-
-        const cubeRotContainer = document.createElement("div");
-        cubeRotContainer.id = `cube-${index}-rot-container`;
-        cubeRotContainer.style.display = "flex";
-
-        const cubeRotLabel = document.createElement("label");
-        cubeRotLabel.htmlFor = `cube-${index}-rot`;
-        cubeRotLabel.innerText = `Rotation`;
-
-        cubeRotContainer.appendChild(cubeRotLabel);
-        const cubeRotX = this.setUpRotation(index, 'X', 'cube');
-        const cubeRotY = this.setUpRotation(index, 'Y', 'cube');
-        const cubeRotZ = this.setUpRotation(index, 'Z', 'cube');
-
-        cubeRotContainer.appendChild(cubeRotX);
-        cubeRotContainer.appendChild(cubeRotY);
-        cubeRotContainer.appendChild(cubeRotZ);
-
-        cubeContainer.appendChild(cubePosContainer);
-
-        cubeContainer.appendChild(cubeRotContainer);
-
-        
 
         const cubePropertiesContainer = document.createElement("div");
         cubePropertiesContainer.id = `cube-${index}-properties-container`;
@@ -623,8 +540,7 @@ export class UserInterface
 
         cubePropertiesContainer.appendChild(cubeSizeContainer);
         cubePropertiesContainer.appendChild(cubeColorContainer);
-        
-        cubeContainer.appendChild(cubePosContainer);
+
         cubeContainer.appendChild(cubePropertiesContainer);
 
         return cubeContainer;
@@ -650,7 +566,6 @@ export class UserInterface
         planeRemoveButton.addEventListener("click", () => {
             this._scene.removeObject(index);
             this.setSelectedObject(null);
-            this.setUpObjects();
         });
 
         planeContainer.appendChild(planeRemoveButton);
