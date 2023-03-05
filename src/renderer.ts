@@ -22,9 +22,10 @@ export default class Renderer
     private _lastUpdate: number = 0;
     private _updateInterval: number = 10;
 
+    private _diffuseLighting: boolean = true;
     private _directionalShadows: boolean = true;
     private _reflections: boolean = true;
-    private _ambientOcclusion: boolean = true;
+    private _ambientOcclusion: boolean = false;
     
     constructor(canvasId: string)
     {
@@ -116,16 +117,28 @@ export default class Renderer
                 vec4.scaleAndAdd(finalColor, finalColor, this._scene.backgroundColor, reflectiveFactor);
                 break;
             }    
-            let diffuse: number = Math.max(this._scene.ambientLight, vec3.dot(hitData.worldNormal, vec3.negate(vec3.create(), this._scene.lightDir)));
-            let object: RenderObject = this._scene.objects[hitData.objectIndex];
-    
-            let color = vec4.create(); 
-            vec4.copy(color, object.color);
-            color[0] *= diffuse;
-            color[1] *= diffuse;
-            color[2] *= diffuse;
+            
+            let color = vec4.create();
 
-            vec4.scaleAndAdd(finalColor, finalColor, color, reflectiveFactor);
+            if(!this._diffuseLighting)
+            {
+                finalColor = vec4.fromValues(1, 1, 1, 1);
+                vec4.scaleAndAdd(finalColor, finalColor, color, reflectiveFactor);
+            }
+
+            else
+            {   
+                let diffuse: number = Math.max(this._scene.ambientLight, vec3.dot(hitData.worldNormal, vec3.negate(vec3.create(), this._scene.lightDir)));
+                let object: RenderObject = this._scene.objects[hitData.objectIndex];
+
+                vec4.copy(color, object.color);
+                color[0] *= diffuse;
+                color[1] *= diffuse;
+                color[2] *= diffuse;
+
+                vec4.scaleAndAdd(finalColor, finalColor, color, reflectiveFactor);
+
+            }
 
 
             if(this._ambientOcclusion && !this._camera.isMoving)
@@ -369,6 +382,9 @@ export default class Renderer
 
     public get updateInterval(): number { return this._updateInterval; }
     public set updateInterval(value: number) { this._updateInterval = value; }
+
+    public get diffuseLighting(): boolean { return this._diffuseLighting; }
+    public set diffuseLighting(value: boolean) { this._diffuseLighting = value; }
 
     public get directionalShadows(): boolean { return this._directionalShadows; }
     public set directionalShadows(value: boolean) { this._directionalShadows = value; }

@@ -82,22 +82,37 @@ export class UserInterface
     
     private setUpRenderSettings(): void
     {
-        this.setupFeatures();
+        this.setupLayers();
         this.setUpUpdateInterval();
         this.setUpMaxBounces();
         this.setUpShadowBias();
     }
 
-    private setupFeatures(): void
+    private setupLayers(): void
     {
-        const featuresContainer = document.createElement("div");
-        featuresContainer.id = "features-container";
+        const layersContainer = document.createElement("div");
+        layersContainer.id = "layers-container";
 
-        const featuresLabel = document.createElement("label");
-        featuresLabel.htmlFor = "features";
-        featuresLabel.innerText = "Features";
+        const layersLabel = document.createElement("label");
+        layersLabel.htmlFor = "layers-container";
+        layersLabel.innerText = "Layers: ";
 
-        featuresContainer.appendChild(featuresLabel);
+        layersContainer.appendChild(layersLabel);
+
+        const albedo = document.createElement("input");
+        albedo.id = "albedo";
+        albedo.type = "checkbox";
+        albedo.checked = this._renderer.diffuseLighting;
+        albedo.addEventListener("input", (e) => {
+            this._renderer.diffuseLighting = (e.target as HTMLInputElement).checked;
+        });
+
+        const albedoLabel = document.createElement("label");
+        albedoLabel.htmlFor = "albedo";
+        albedoLabel.innerText = "Albedo";
+
+        layersContainer.appendChild(albedo);
+        layersContainer.appendChild(albedoLabel);
 
         const shadowsInput = document.createElement("input");
         shadowsInput.id = "shadows";
@@ -111,8 +126,8 @@ export class UserInterface
         shadowsLabel.htmlFor = "shadows";
         shadowsLabel.innerText = "Shadows";
 
-        featuresContainer.appendChild(shadowsInput);
-        featuresContainer.appendChild(shadowsLabel);
+        layersContainer.appendChild(shadowsInput);
+        layersContainer.appendChild(shadowsLabel);
 
         const reflectionsInput = document.createElement("input");
         reflectionsInput.id = "reflections";
@@ -126,8 +141,8 @@ export class UserInterface
         reflectionsLabel.htmlFor = "reflections";
         reflectionsLabel.innerText = "Reflections";
 
-        featuresContainer.appendChild(reflectionsInput);
-        featuresContainer.appendChild(reflectionsLabel);
+        layersContainer.appendChild(reflectionsInput);
+        layersContainer.appendChild(reflectionsLabel);
         
         const aoInput = document.createElement("input");
         aoInput.id = "ao";
@@ -141,10 +156,10 @@ export class UserInterface
         aoLabel.htmlFor = "ao";
         aoLabel.innerText = "Ambient Occlusion";
 
-        featuresContainer.appendChild(aoInput);
-        featuresContainer.appendChild(aoLabel);
+        layersContainer.appendChild(aoInput);
+        layersContainer.appendChild(aoLabel);
         
-        this._dom.appendChild(featuresContainer);
+        this._dom.appendChild(layersContainer);
     }
 
     private setUpUpdateInterval(): void
