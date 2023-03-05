@@ -29,23 +29,22 @@ export class Application
         this._stats = new Stats();
         this._stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
 
-        this._camera = new Camera({position: vec3.fromValues(0, 1, 3)});
+        this._camera = new Camera({position: vec3.fromValues(-0.5, 1, 3)});
+        this._camera.rotateY(-0.33);
         this._scene = new Scene({});
         this._ui = new UserInterface(this._appContainer);
         this._stats.dom.style.position = "relative";
         this._stats.dom.style.zIndex = "100";
 
         document.getElementById("raytracer")?.appendChild(this._stats.dom);
-
-        this._scene.lightDir = vec3.normalize(vec3.create(), vec3.fromValues(1, 1, 1));
         
         // Add a sphere
         const sphere = new OBJECTS.Sphere({position: vec3.fromValues(0, -1, 0), radius: 0.5, color: COLORS.RED});
         this._scene.addObject(sphere);
 
         // Add a cube
-        //const cube = new Cube({position: vec3.fromValues(-0.5, 0.15, 0), size: 0.5, color: COLORS.YELLOW});
-        //this._scene.addObject(cube);
+        const cube = new OBJECTS.Cube({position: vec3.fromValues(-0.55, -0.25, 0), size: 0.5, color: COLORS.YELLOW});
+        this._scene.addObject(cube);
 
         // Add a plane
         const plane = new OBJECTS.Plane({color: COLORS.CYAN, size: 4});

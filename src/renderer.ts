@@ -135,7 +135,7 @@ export default class Renderer
 
             else
             {   
-                let diffuse: number = Math.max(this._scene.ambientLight, vec3.dot(hitData.worldNormal, vec3.negate(vec3.create(), this._scene.lightDir)));
+                let diffuse: number = Math.max(this._scene.ambientLight, vec3.dot(hitData.worldNormal, vec3.negate(vec3.create(), this._scene.directionalLight.direction)));
                 let object: RenderObject = this._scene.objects[hitData.objectIndex];
 
                 vec4.copy(color, object.color);
@@ -191,7 +191,7 @@ export default class Renderer
                 // shador ray direction with random offset to artificially soften shadows
                 let randomOffset = vec3.create();
                 vec3.random(randomOffset, this._shadowBias);
-                shadowRay.direction = vec3.sub(vec3.create(), this._scene.lightDir, randomOffset);
+                shadowRay.direction = vec3.sub(vec3.create(), this._scene.directionalLight.direction, randomOffset);
                 shadowRay.direction = vec3.negate(shadowRay.direction, shadowRay.direction);
                 let shadowHitData = this.traceRay(shadowRay);
                 

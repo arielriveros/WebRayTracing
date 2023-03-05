@@ -2,6 +2,7 @@ import { vec3, vec4 } from "gl-matrix";
 import { COLORS } from "../utils";
 import RenderObject from "../objects/renderObject";
 import Renderer from "../renderer";
+import DirectionalLight from "./directionalLight";
 
 interface SceneParameters
 {
@@ -13,7 +14,7 @@ interface SceneParameters
 export default class Scene
 {
     private _objects: Array<RenderObject>;
-    private _lightDir: vec3;
+    private _directionalLight: DirectionalLight;
     private _ambientLight: number;
     private _backgroundColor: vec4;
     private _renderer!: Renderer;
@@ -21,15 +22,14 @@ export default class Scene
     constructor({lightDir = vec3.fromValues(0, 1, 0), ambientLight = 0.1, backgroundColor = COLORS.BLACK}: SceneParameters)
     {
         this._objects = [];
-        this._lightDir = lightDir;
+        this._directionalLight = new DirectionalLight(lightDir);
         this._ambientLight = ambientLight;
         this._backgroundColor = backgroundColor;
     }
 
     public get objects(): Array<RenderObject> { return this._objects; }
 
-    public get lightDir(): vec3 { return this._lightDir; }
-    public set lightDir(value: vec3) { this._lightDir = value; }
+    public get directionalLight(): DirectionalLight { return this._directionalLight; }
 
     public get ambientLight(): number { return this._ambientLight; }
     public set ambientLight(value: number) { this._ambientLight = value; }

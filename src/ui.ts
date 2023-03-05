@@ -263,28 +263,20 @@ export class UserInterface
         lightDirXRotation.type = "range";
         lightDirXRotation.min = "-180";
         lightDirXRotation.max = "180";
-        lightDirXRotation.value = "0";
+        lightDirXRotation.value = this._scene.directionalLight.theta.toString();
         lightDirXRotation.addEventListener("input", (e) => {
-            this._scene.lightDir = vec3.fromValues(
-                Math.sin((e.target as HTMLInputElement).valueAsNumber * Math.PI / 180),
-                Math.cos((e.target as HTMLInputElement).valueAsNumber * Math.PI / 180),
-                0
-            );
+            this._scene.directionalLight.phi = (e.target as HTMLInputElement).valueAsNumber * Math.PI / 180;
         });
 
 
         const lightDirYRotation = document.createElement("input");
         lightDirYRotation.id = "lightDirYRotation";
         lightDirYRotation.type = "range";
-        lightDirYRotation.min = "-180";
-        lightDirYRotation.max = "180";
-        lightDirYRotation.value = "0";
+        lightDirYRotation.min = "-90";
+        lightDirYRotation.max = "90";
+        lightDirYRotation.value = this._scene.directionalLight.theta.toString();
         lightDirYRotation.addEventListener("input", (e) => {
-            this._scene.lightDir = vec3.fromValues(
-                Math.sin((e.target as HTMLInputElement).valueAsNumber * Math.PI / 180),
-                0,
-                Math.cos((e.target as HTMLInputElement).valueAsNumber * Math.PI / 180)
-            );
+            this._scene.directionalLight.theta = (e.target as HTMLInputElement).valueAsNumber * Math.PI / 180;
         });
 
         lightDirContainer.appendChild(lightDirXRotation);
