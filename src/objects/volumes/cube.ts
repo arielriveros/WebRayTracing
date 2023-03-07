@@ -1,5 +1,6 @@
 import { vec3, vec4 } from "gl-matrix";
-import RenderObject from "../renderObject";
+import RenderObject, { RayIntersection } from "../renderObject";
+import Ray from "src/ray/ray";
 
 interface CubeParameters
 {
@@ -43,6 +44,66 @@ export class Cube extends RenderObject
     public calcMax(): vec3 
     { 
         return vec3.add(this._max, this.position, vec3.fromValues(this._size, this._size, this._size));
+    }
+
+    public override getIntersection(ray: Ray, previousIntersection: RayIntersection): RayIntersection
+    {
+        let origin = vec3.sub(vec3.create(), ray.origin, this.position);
+
+        let tmin: number = (this.min[0] - origin[0]) / ray.direction[0];
+        let tmax: number = (this.max[0] - origin[0]) / ray.direction[0];
+
+        if(tmin > tmax)
+        {
+            let temp: number = tmin;
+            tmin = tmax;
+            tmax = temp;                        
+        }
+
+        let tymin: number = (this.min[1] - origin[1]) / ray.direction[1];
+        let tymax: number = (this.max[1] - origin[1]) / ray.direction[1];
+
+        if(tymin > tymax)
+        {
+            let temp: number = tymin;
+            tymin = tymax;
+            tymax = temp;
+        }
+
+        if((tmin > tymax) || (tymin > tmax))
+            return previousIntersection;
+
+        if(tymin > tmin)
+            tmin = tymin;
+        
+        if(tymax < tmax)
+            tmax = tymax;
+
+        let tzmin: number = (this.min[2] - origin[2]) / ray.direction[2];
+        let tzmax: number = (this.max[2] - origin[2]) / ray.direction[2];
+
+        if(tzmin > tzmax)
+        {
+            let temp: number = tzmin;
+            tzmin = tzmax;
+            tzmax = temp;
+        }
+
+        if((tmin > tzmax) || (tzmin > tmax))
+            return previousIntersection;
+
+        if(tzmin > tmin)
+            tmin = tzmin;
+
+        if(tzmax < tmax)
+            tmax = tzmax;
+
+        if(tmin < previousIntersection.hitDistance && tmin > 0.0)
+        {   
+            return { hitDistance: tmin, closestObject: this };
+        }
+
+        return previousIntersection;
     }
 
     public override getNormalAtPoint(point: vec3): vec3

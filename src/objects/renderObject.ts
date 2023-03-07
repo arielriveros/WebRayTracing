@@ -1,6 +1,12 @@
 import { vec3, vec4 } from "gl-matrix";
+import Ray from "src/ray/ray";
 
 type Geometry = 'sphere' | 'cube' | 'plane';
+export interface RayIntersection
+{
+    closestObject: RenderObject | null;
+    hitDistance: number;
+}
 
 export default abstract class RenderObject
 {
@@ -28,5 +34,6 @@ export default abstract class RenderObject
 
     public get type(): Geometry { return this._type; }
 
+    public getIntersection(ray: Ray, previousIntersection: RayIntersection): RayIntersection { return {closestObject: null, hitDistance: 0}; }
     public getNormalAtPoint(point: vec3): vec3 { return vec3.create(); }
 }

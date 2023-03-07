@@ -2,7 +2,7 @@ import { vec3, vec4} from "gl-matrix";
 import Camera from "./scene/camera";
 import Scene from "./scene/scene";
 import Ray from "./ray/ray";
-import RenderObject from "./objects/renderObject";
+import RenderObject, { RayIntersection } from "./objects/renderObject";
 import HitData from "./ray/hitData";
 import * as OBJECTS from "./objects/objects";
 
@@ -241,126 +241,18 @@ export default class Renderer
 
     private traceRay(ray: Ray): HitData
     {
-        let closestObject: RenderObject | null = null;
-        let hitDistance: number = Number.MAX_VALUE;
-
-        for(let object of this._scene.objects)
-        {
-            let t: number = Number.MAX_VALUE;
-            {
-                if(object.type === 'plane')
-                {
-                    let plane = object as OBJECTS.Plane;
-
-                    let denom: number = vec3.dot(plane.normal, ray.direction);
-                    if(denom > 0.0001)
-                    {
-                        let p0l0: vec3 = vec3.create();
-                        vec3.sub(p0l0, plane.position, ray.origin);
-                        t = vec3.dot(p0l0, plane.normal) / denom;
-                        if(t < hitDistance)
-                        {
-                            let hitPoint: vec3 = vec3.create();
-                            vec3.scaleAndAdd(hitPoint, ray.origin, ray.direction, t);
-                            let u: number = vec3.dot(hitPoint, plane.tangent);
-                            let v: number = vec3.dot(hitPoint, plane.bitangent);
-                            if(u >= plane.uMin && u <= plane.uMax && v >= plane.vMin && v <= plane.vMax)
-                            {
-                                hitDistance = t;
-                                closestObject = plane as OBJECTS.Plane;
-                            }
-                        }
-                    }
-                }
-
-                if(object.type === 'sphere')
-                {
-                    let sphere = object as OBJECTS.Sphere;
-                    let origin = vec3.sub(vec3.create(), ray.origin, object.position);
-
-                    let a: number = vec3.dot(ray.direction, ray.direction);
-                    let b: number = 2.0 * vec3.dot(origin, ray.direction);
-                    let c: number = vec3.dot(origin, origin) - sphere.radius * sphere.radius;
-                    let d: number = b * b - 4.0 * a * c;
-            
-                    if(d < 0.0)
-                        continue;
-                
-                    t = (-b - Math.sqrt(d)) / (2.0 * a);
-                    if(t < hitDistance && t > 0.0)
-                    {
-                        hitDistance = t;
-                        closestObject = sphere as OBJECTS.Sphere;
-                    }
-                }
-
-                if(object.type === 'cube')
-                {
-                    let cube = object as OBJECTS.Cube;
-                    let origin = vec3.sub(vec3.create(), ray.origin, object.position);
-
-                    let tmin: number = (cube.min[0] - origin[0]) / ray.direction[0];
-                    let tmax: number = (cube.max[0] - origin[0]) / ray.direction[0];
-
-                    if(tmin > tmax)
-                    {
-                        let temp: number = tmin;
-                        tmin = tmax;
-                        tmax = temp;                        
-                    }
-
-                    let tymin: number = (cube.min[1] - origin[1]) / ray.direction[1];
-                    let tymax: number = (cube.max[1] - origin[1]) / ray.direction[1];
-
-                    if(tymin > tymax)
-                    {
-                        let temp: number = tymin;
-                        tymin = tymax;
-                        tymax = temp;
-                    }
-
-                    if((tmin > tymax) || (tymin > tmax))
-                        continue;
-
-                    if(tymin > tmin)
-                        tmin = tymin;
-                    
-                    if(tymax < tmax)
-                        tmax = tymax;
-
-                    let tzmin: number = (cube.min[2] - origin[2]) / ray.direction[2];
-                    let tzmax: number = (cube.max[2] - origin[2]) / ray.direction[2];
-
-                    if(tzmin > tzmax)
-                    {
-                        let temp: number = tzmin;
-                        tzmin = tzmax;
-                        tzmax = temp;
-                    }
-
-                    if((tmin > tzmax) || (tzmin > tmax))
-                        continue;
-
-                    if(tzmin > tmin)
-                        tmin = tzmin;
-
-                    if(tzmax < tmax)
-                        tmax = tzmax;
-
-                    if(tmin < hitDistance && tmin > 0.0)
-                    {   
-                        hitDistance = tmin;
-                        closestObject = cube as OBJECTS.Cube;
-                    }
-                    
-                }
-            }
+        let previousIntersection: RayIntersection = {
+            closestObject: null,
+            hitDistance: Number.MAX_VALUE
         }
 
-        if(closestObject == null)
+        for(let object of this._scene.objects)
+            previousIntersection = object.getIntersection(ray, previousIntersection);
+
+        if(previousIntersection.closestObject == null)
             return this.miss(ray);
 
-        return this.closestHit(ray, this._scene.objects.indexOf(closestObject), hitDistance);     
+        return this.closestHit(ray, this._scene.objects.indexOf(previousIntersection.closestObject), previousIntersection.hitDistance);     
     }
 
     public castScreenRay(x: number, y: number): RenderObject | null

@@ -1,5 +1,6 @@
 import { vec3, vec4 } from "gl-matrix";
-import RenderObject from "../renderObject";
+import RenderObject, { RayIntersection } from "../renderObject";
+import Ray from "src/ray/ray";
 
 interface PlaneParameters
 {
@@ -50,7 +51,34 @@ export class Plane extends RenderObject
     public get tangent(): vec3 { return this._tangent; }
     public get bitangent(): vec3 { return this._bitangent; }
 
-    public override getNormalAtPoint(point: vec3): vec3 {
+    public override getIntersection(ray: Ray, previousIntersection: RayIntersection): RayIntersection
+    {
+        let closestDistance: number = Number.MAX_VALUE;
+
+        let denom: number = vec3.dot(this.normal, ray.direction);
+        if(denom > 0.0001)
+        {
+            let p0l0: vec3 = vec3.create();
+            vec3.sub(p0l0, this.position, ray.origin);
+            closestDistance = vec3.dot(p0l0, this.normal) / denom;
+            if(closestDistance < previousIntersection.hitDistance)
+            {
+                let hitPoint: vec3 = vec3.create();
+                vec3.scaleAndAdd(hitPoint, ray.origin, ray.direction, closestDistance);
+                let u: number = vec3.dot(hitPoint, this.tangent);
+                let v: number = vec3.dot(hitPoint, this.bitangent);
+                if(u >= this.uMin && u <= this.uMax && v >= this.vMin && v <= this.vMax)
+                {
+                    return {hitDistance: closestDistance, closestObject: this}
+                }
+            }
+        }
+
+        return previousIntersection;
+    }
+
+    public override getNormalAtPoint(point: vec3): vec3
+    {
         return vec3.negate(vec3.create(), this.normal);
     }
 }
