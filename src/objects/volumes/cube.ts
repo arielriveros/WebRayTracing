@@ -36,17 +36,17 @@ export class Cube extends RenderObject
     public get min(): vec3 { return this._min; }
     public get max(): vec3 { return this._max; }
 
-    public calcMin(): vec3
+    private calcMin(): vec3
     { 
         return vec3.add(this._min, this.position, vec3.fromValues(-this._size, -this._size, -this._size)); 
     }
     
-    public calcMax(): vec3 
+    private calcMax(): vec3 
     { 
         return vec3.add(this._max, this.position, vec3.fromValues(this._size, this._size, this._size));
     }
 
-    public override getIntersection(ray: Ray, previousIntersection: RayIntersection): RayIntersection
+    public override getIntersection(ray: Ray, intersection: RayIntersection): void
     {
         let origin = vec3.sub(vec3.create(), ray.origin, this.position);
 
@@ -71,7 +71,7 @@ export class Cube extends RenderObject
         }
 
         if((tmin > tymax) || (tymin > tmax))
-            return previousIntersection;
+            return;
 
         if(tymin > tmin)
             tmin = tymin;
@@ -90,7 +90,7 @@ export class Cube extends RenderObject
         }
 
         if((tmin > tzmax) || (tzmin > tmax))
-            return previousIntersection;
+            return;
 
         if(tzmin > tmin)
             tmin = tzmin;
@@ -98,12 +98,11 @@ export class Cube extends RenderObject
         if(tzmax < tmax)
             tmax = tzmax;
 
-        if(tmin < previousIntersection.hitDistance && tmin > 0.0)
+        if(tmin < intersection.hitDistance && tmin > 0.0)
         {   
-            return { hitDistance: tmin, closestObject: this };
+            intersection.hitDistance = tmin;
+            intersection.closestObject = this;
         }
-
-        return previousIntersection;
     }
 
     public override getNormalAtPoint(point: vec3): vec3

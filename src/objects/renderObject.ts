@@ -34,6 +34,6 @@ export default abstract class RenderObject
 
     public get type(): Geometry { return this._type; }
 
-    public getIntersection(ray: Ray, previousIntersection: RayIntersection): RayIntersection { return {closestObject: null, hitDistance: 0}; }
+    public getIntersection(ray: Ray, intersection: RayIntersection): void { }
     public getNormalAtPoint(point: vec3): vec3 { return vec3.create(); }
 }

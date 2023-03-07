@@ -247,7 +247,7 @@ export default class Renderer
         }
 
         for(let object of this._scene.objects)
-            previousIntersection = object.getIntersection(ray, previousIntersection);
+            object.getIntersection(ray, previousIntersection);
 
         if(previousIntersection.closestObject == null)
             return this.miss(ray);

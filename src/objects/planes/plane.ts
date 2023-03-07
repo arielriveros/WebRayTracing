@@ -51,7 +51,7 @@ export class Plane extends RenderObject
     public get tangent(): vec3 { return this._tangent; }
     public get bitangent(): vec3 { return this._bitangent; }
 
-    public override getIntersection(ray: Ray, previousIntersection: RayIntersection): RayIntersection
+    public override getIntersection(ray: Ray, intersection: RayIntersection): void
     {
         let closestDistance: number = Number.MAX_VALUE;
 
@@ -61,7 +61,7 @@ export class Plane extends RenderObject
             let p0l0: vec3 = vec3.create();
             vec3.sub(p0l0, this.position, ray.origin);
             closestDistance = vec3.dot(p0l0, this.normal) / denom;
-            if(closestDistance < previousIntersection.hitDistance)
+            if(closestDistance < intersection.hitDistance)
             {
                 let hitPoint: vec3 = vec3.create();
                 vec3.scaleAndAdd(hitPoint, ray.origin, ray.direction, closestDistance);
@@ -69,12 +69,11 @@ export class Plane extends RenderObject
                 let v: number = vec3.dot(hitPoint, this.bitangent);
                 if(u >= this.uMin && u <= this.uMax && v >= this.vMin && v <= this.vMax)
                 {
-                    return {hitDistance: closestDistance, closestObject: this}
+                    intersection.hitDistance = closestDistance;
+                    intersection.closestObject = this;
                 }
             }
         }
-
-        return previousIntersection;
     }
 
     public override getNormalAtPoint(point: vec3): vec3

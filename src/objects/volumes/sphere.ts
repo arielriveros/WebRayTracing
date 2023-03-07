@@ -23,7 +23,7 @@ export class Sphere extends RenderObject
     public get radius(): number { return this._radius; }
     public set radius(value: number) { this._radius = value; }
 
-    public override getIntersection(ray: Ray, previousIntersection: RayIntersection): RayIntersection
+    public override getIntersection(ray: Ray, intersection: RayIntersection): void
     {
         let closestDistance: number = Number.MAX_VALUE;
         let origin = vec3.sub(vec3.create(), ray.origin, this.position);
@@ -34,15 +34,14 @@ export class Sphere extends RenderObject
         let d: number = b * b - 4.0 * a * c;
 
         if(d < 0.0)
-            return previousIntersection;
+            return;
     
         closestDistance = (-b - Math.sqrt(d)) / (2.0 * a);
-        if(closestDistance < previousIntersection.hitDistance && closestDistance > 0.0)
+        if(closestDistance < intersection.hitDistance && closestDistance > 0.0)
         {
-            return { hitDistance: closestDistance, closestObject: this };
+            intersection.hitDistance = closestDistance;
+            intersection.closestObject = this;
         }
-
-        return previousIntersection;
     }
 
     public override getNormalAtPoint(point: vec3): vec3 {
