@@ -54,17 +54,18 @@ export class Plane extends RenderObject
     public override getIntersection(ray: Ray, intersection: RayIntersection): void
     {
         let closestDistance: number = Number.MAX_VALUE;
+        let origin = vec3.sub(vec3.create(), ray.origin, this.position);
 
         let denom: number = vec3.dot(this.normal, ray.direction);
         if(denom > 0.0001)
         {
             let p0l0: vec3 = vec3.create();
-            vec3.sub(p0l0, this.position, ray.origin);
+            vec3.sub(p0l0, this.position, origin);
             closestDistance = vec3.dot(p0l0, this.normal) / denom;
             if(closestDistance < intersection.hitDistance)
             {
                 let hitPoint: vec3 = vec3.create();
-                vec3.scaleAndAdd(hitPoint, ray.origin, ray.direction, closestDistance);
+                vec3.scaleAndAdd(hitPoint, origin, ray.direction, closestDistance);
                 let u: number = vec3.dot(hitPoint, this.tangent);
                 let v: number = vec3.dot(hitPoint, this.bitangent);
                 if(u >= this.uMin && u <= this.uMax && v >= this.vMin && v <= this.vMax)
