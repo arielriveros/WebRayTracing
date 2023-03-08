@@ -341,6 +341,14 @@ export class UserInterface
 
         objectsContainer.appendChild(addCubeButton);
 
+        const addPlaneButton = document.createElement("button");
+        addPlaneButton.innerText = "Add Plane";
+        addPlaneButton.addEventListener("click", () => {
+            this._scene.addObject(new OBJECTS.Plane({size: 0.5}));
+        });
+
+        objectsContainer.appendChild(addPlaneButton);
+        
         this._dom.appendChild(objectsContainer);
     }
 
