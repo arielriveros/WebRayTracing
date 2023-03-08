@@ -74,6 +74,10 @@ export class UserInterface
                 break;
             case "plane":
                 currentSelectedObjectContainer.appendChild(this.setUpPlane(index));
+                break;
+            case "circle":
+                currentSelectedObjectContainer.appendChild(this.setUpCircle(index));
+                break;
         }
 
         this._appContainer.appendChild(currentSelectedObjectContainer);
@@ -561,5 +565,71 @@ export class UserInterface
         return planeContainer;
     }
 
+    private setUpCircle(index: number): HTMLDivElement
+    {
+        const circleContainer = document.createElement("div");
+        circleContainer.id = `circle-${index}-container`;
+        circleContainer.style.position = "relative";
+        circleContainer.style.border = "1px solid black";
+        circleContainer.style.padding = "5px";
+
+        const circleLabel = document.createElement("label");
+        circleLabel.htmlFor = `circle-${index}`;
+        circleLabel.innerText = `Circle ${index}`;
+
+        circleContainer.appendChild(circleLabel);
+
+        const circlePropertiesContainer = document.createElement("div");
+        circlePropertiesContainer.id = `circle-${index}-properties-container`;
+        circlePropertiesContainer.style.display = "flex";
+
+        const circleRadius = document.createElement("input");
+        circleRadius.id = `circle-${index}-radius`;
+        circleRadius.type = "range";
+        circleRadius.min = "0";
+        circleRadius.max = "1";
+        circleRadius.step = "0.01";
+        circleRadius.value = (this._scene.objects[index] as OBJECTS.Circle).radius?.toString();
+        circleRadius.style.width = "100%";
+        circleRadius.addEventListener("input", (e) => {
+            (this._scene.objects[index] as OBJECTS.Circle).radius = parseFloat((e.target as HTMLInputElement).value);
+        });
+
+        const circleRadiusLabel = document.createElement("label");
+        circleRadiusLabel.htmlFor = `circle-${index}-radius`;
+        circleRadiusLabel.innerText = `Radius`;
+
+        const circleRadiusContainer = document.createElement("div");
+        circleRadiusContainer.id = `circle-${index}-radius-container`;
+
+        circleRadiusContainer.appendChild(circleRadiusLabel);
+        circleRadiusContainer.appendChild(circleRadius);
+
+        const circleColor = document.createElement("input");
+        circleColor.id = `circle-${index}-color`;
+        circleColor.type = "color";
+        circleColor.value = vec4ToHex(this._scene.objects[index].color);
+        circleColor.style.width = "100%";
+        circleColor.addEventListener("input", (e) => {
+            this._scene.objects[index].color = hexToVec4((e.target as HTMLInputElement).value);
+        }   );
+
+        const circleColorLabel = document.createElement("label");
+        circleColorLabel.htmlFor = `circle-${index}-color`;
+        circleColorLabel.innerText = `Color`;
+
+        const circleColorContainer = document.createElement("div");
+        circleColorContainer.id = `circle-${index}-color-container`;
+
+        circleColorContainer.appendChild(circleColorLabel);
+        circleColorContainer.appendChild(circleColor);
+
+        circlePropertiesContainer.appendChild(circleRadiusContainer);
+        circlePropertiesContainer.appendChild(circleColorContainer);
+
+        circleContainer.appendChild(circlePropertiesContainer);
+
+        return circleContainer;
+    }
     public get dom(): HTMLDivElement { return this._dom; }
 }
