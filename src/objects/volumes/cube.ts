@@ -1,12 +1,10 @@
 import { vec3, vec4 } from "gl-matrix";
-import RenderObject, { RayIntersection } from "../renderObject";
+import RenderObject, { RayIntersection, RenderObjectParameters } from "../renderObject";
 import Ray from "src/ray/ray";
 
-interface CubeParameters
+interface CubeParameters extends RenderObjectParameters
 {
-    position?: vec3,
-    size?: number,
-    color?: vec4
+    size?: number;
 }
 
 export class Cube extends RenderObject
@@ -15,11 +13,10 @@ export class Cube extends RenderObject
     private _min: vec3 = vec3.create();
     private _max: vec3 = vec3.create();
 
-    constructor({position = vec3.create(), size = 1, color = vec4.fromValues(1, 1, 1, 1)}: CubeParameters)
+    constructor(parameters: CubeParameters = {})
     {
-        super(position, color, 'cube');
-        this._size = size;
-        
+        super(parameters, 'cube');
+        this._size = parameters.size ?? 0.5;        
         this._min = this.calcMin();
         this._max = this.calcMax();
     }

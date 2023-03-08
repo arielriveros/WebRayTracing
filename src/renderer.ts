@@ -138,7 +138,7 @@ export default class Renderer
                 let diffuse: number = Math.max(this._scene.ambientLight, vec3.dot(hitData.worldNormal, vec3.negate(vec3.create(), this._scene.directionalLight.direction)));
                 let object: RenderObject = this._scene.objects[hitData.objectIndex];
 
-                vec4.copy(color, object.color);
+                vec4.copy(color, object.material.baseColor);
                 color[0] *= diffuse;
                 color[1] *= diffuse;
                 color[2] *= diffuse;

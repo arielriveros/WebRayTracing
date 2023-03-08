@@ -1,11 +1,9 @@
 import { vec2, vec3, vec4 } from "gl-matrix";
-import RenderObject, { RayIntersection } from "../renderObject";
+import RenderObject, { RayIntersection, RenderObjectParameters } from "../renderObject";
 import Ray from "src/ray/ray";
 
-interface CircleParameters
+interface CircleParameters extends RenderObjectParameters
 {
-    position?: vec3;
-    color?: vec4;
     radius?: number;
 }
 
@@ -14,10 +12,10 @@ export class Circle extends RenderObject
     private _radius: number;
     private _normal: vec3;
 
-    constructor({position = vec3.create(), color = vec4.fromValues(1, 1, 1, 1), radius = 1}: CircleParameters)
+    constructor(parameters: CircleParameters = {})
     {
-        super(position, color, 'circle');
-        this._radius = radius;
+        super(parameters, 'circle');
+        this._radius = parameters.radius ?? 0.5;
         this._normal = vec3.fromValues(0, 0, 1);
     }
 

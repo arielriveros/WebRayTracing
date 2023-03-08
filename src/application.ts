@@ -7,6 +7,7 @@ import Stats from "stats.js";
 import { UserInterface } from "./ui/ui";
 import * as OBJECTS from "./objects/objects";
 import Input from "./ui/input";
+import Material from "./objects/material";
 
 export class Application
 {
@@ -43,13 +44,36 @@ export class Application
         document.getElementById("raytracer")?.appendChild(this._stats.dom);
         
         // Add a sphere
-        this._scene.addObject(new OBJECTS.Sphere({position: vec3.fromValues(0, -1, 0), radius: 0.5, color: COLORS.RED}));
+        this._scene.addObject(
+            new OBJECTS.Sphere({
+                position: vec3.fromValues(0, -1, 0),
+                radius: 0.5,
+                material: new Material({
+                    baseColor: COLORS.RED
+                })
+            })
+        );
 
         // Add a cube
-        this._scene.addObject(new OBJECTS.Cube({position: vec3.fromValues(-0.55, -0.25, 0), size: 0.5, color: COLORS.YELLOW}));
+        this._scene.addObject(
+            new OBJECTS.Cube({
+                position: vec3.fromValues(-0.55, -0.25, 0),
+                size: 0.5,
+                material: new Material({
+                    baseColor: COLORS.GREEN
+                })
+            })
+        );
 
         // Add a plane
-        this._scene.addObject(new OBJECTS.Plane({color: COLORS.CYAN, size: 4}));
+        this._scene.addObject(
+            new OBJECTS.Plane({
+                size: 4,
+                material: new Material({
+                    baseColor: COLORS.YELLOW
+                })
+            })
+        );
    
     }
 

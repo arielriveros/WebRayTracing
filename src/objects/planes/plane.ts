@@ -1,11 +1,9 @@
 import { vec3, vec4 } from "gl-matrix";
-import RenderObject, { RayIntersection } from "../renderObject";
+import RenderObject, { RayIntersection, RenderObjectParameters } from "../renderObject";
 import Ray from "src/ray/ray";
 
-interface PlaneParameters
+interface PlaneParameters extends RenderObjectParameters
 {
-    position?: vec3;
-    color?: vec4;
     size?: number;
 }
 
@@ -20,14 +18,14 @@ export class Plane extends RenderObject
     private _tangent: vec3;
     private _bitangent: vec3;
 
-    constructor({position = vec3.create(), color = vec4.fromValues(1, 1, 1, 1), size = 1}: PlaneParameters)
+    constructor(parameters: PlaneParameters = {})
     {
-        super(position, color, 'plane');
-        this._size = size;
-        this._uMin = -size;
-        this._uMax = size;
-        this._vMin = -size;
-        this._vMax = size;
+        super(parameters, 'plane');
+        this._size = parameters.size ?? 0.5;
+        this._uMin = -this._size;
+        this._uMax = this._size;
+        this._vMin = -this._size;
+        this._vMax = this._size;
         this._normal = vec3.fromValues(0, 1, 0);
         this._tangent = vec3.fromValues(1, 0, 0);
         this._bitangent = vec3.fromValues(0, 0, 1);

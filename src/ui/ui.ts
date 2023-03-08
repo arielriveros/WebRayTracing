@@ -404,7 +404,7 @@ export class UserInterface
         sphereRadiusContainer.appendChild(sphereRadiusLabel);
         sphereRadiusContainer.appendChild(sphereRadius);
 
-        const sphereColor = document.createElement("input");
+        /* const sphereColor = document.createElement("input");
         sphereColor.id = `sphere-${index}-color`;
         sphereColor.type = "color";
         sphereColor.value = vec4ToHex(this._scene.objects[index].color);
@@ -421,10 +421,10 @@ export class UserInterface
         sphereColorContainer.id = `sphere-${index}-color-container`;
 
         sphereColorContainer.appendChild(sphereColorLabel);
-        sphereColorContainer.appendChild(sphereColor);
+        sphereColorContainer.appendChild(sphereColor); */
 
         spherePropertiesContainer.appendChild(sphereRadiusContainer);
-        spherePropertiesContainer.appendChild(sphereColorContainer);
+        //spherePropertiesContainer.appendChild(sphereColorContainer);
 
         sphereContainer.appendChild(spherePropertiesContainer);
 
@@ -471,7 +471,7 @@ export class UserInterface
         cubeSizeContainer.appendChild(cubeSizeLabel);
         cubeSizeContainer.appendChild(cubeSize);
 
-        const cubeColor = document.createElement("input");
+        /* const cubeColor = document.createElement("input");
         cubeColor.id = `cube-${index}-color`;
         cubeColor.type = "color";
         cubeColor.value = vec4ToHex(this._scene.objects[index].color);
@@ -488,10 +488,10 @@ export class UserInterface
         cubeColorContainer.id = `cube-${index}-color-container`;
 
         cubeColorContainer.appendChild(cubeColorLabel);
-        cubeColorContainer.appendChild(cubeColor);
+        cubeColorContainer.appendChild(cubeColor); */
 
         cubePropertiesContainer.appendChild(cubeSizeContainer);
-        cubePropertiesContainer.appendChild(cubeColorContainer);
+        //cubePropertiesContainer.appendChild(cubeColorContainer);
 
         cubeContainer.appendChild(cubePropertiesContainer);
 
@@ -538,7 +538,7 @@ export class UserInterface
         planeSizeContainer.appendChild(planeSizeLabel);
         planeSizeContainer.appendChild(planeSize);
 
-        const planeColor = document.createElement("input");
+        /* const planeColor = document.createElement("input");
         planeColor.id = `plane-${index}-color`;
         planeColor.type = "color";
         planeColor.value = vec4ToHex(this._scene.objects[index].color);
@@ -555,10 +555,10 @@ export class UserInterface
         planeColorContainer.id = `plane-${index}-color-container`;
 
         planeColorContainer.appendChild(planeColorLabel);
-        planeColorContainer.appendChild(planeColor);
+        planeColorContainer.appendChild(planeColor); */
 
         planePropertiesContainer.appendChild(planeSizeContainer);
-        planePropertiesContainer.appendChild(planeColorContainer);
+        //planePropertiesContainer.appendChild(planeColorContainer);
 
         planeContainer.appendChild(planePropertiesContainer);
 
@@ -605,7 +605,7 @@ export class UserInterface
         circleRadiusContainer.appendChild(circleRadiusLabel);
         circleRadiusContainer.appendChild(circleRadius);
 
-        const circleColor = document.createElement("input");
+        /* const circleColor = document.createElement("input");
         circleColor.id = `circle-${index}-color`;
         circleColor.type = "color";
         circleColor.value = vec4ToHex(this._scene.objects[index].color);
@@ -622,10 +622,10 @@ export class UserInterface
         circleColorContainer.id = `circle-${index}-color-container`;
 
         circleColorContainer.appendChild(circleColorLabel);
-        circleColorContainer.appendChild(circleColor);
+        circleColorContainer.appendChild(circleColor); */
 
         circlePropertiesContainer.appendChild(circleRadiusContainer);
-        circlePropertiesContainer.appendChild(circleColorContainer);
+        //circlePropertiesContainer.appendChild(circleColorContainer);
 
         circleContainer.appendChild(circlePropertiesContainer);
 

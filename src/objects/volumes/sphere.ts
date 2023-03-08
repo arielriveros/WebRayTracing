@@ -1,22 +1,20 @@
 import { vec3, vec4 } from "gl-matrix";
-import RenderObject, { RayIntersection } from "../renderObject";
+import RenderObject, { RayIntersection, RenderObjectParameters } from "../renderObject";
 import Ray from "src/ray/ray";
 
-interface SphereParameters
+interface SphereParameters extends RenderObjectParameters
 {
-    position?: vec3,
-    radius?: number,
-    color?: vec4
+    radius?: number;
 }
 
 export class Sphere extends RenderObject
 {
     private _radius: number;
 
-    constructor({position = vec3.create(), radius = 1, color = vec4.fromValues(1, 1, 1, 1)}: SphereParameters)
+    constructor(parameters: SphereParameters = {})
     {
-        super(position,  color, 'sphere');
-        this._radius = radius;
+        super(parameters, 'sphere');
+        this._radius = parameters.radius ?? 0.5;
     }
 
     public get radius(): number { return this._radius; }
