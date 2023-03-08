@@ -34,7 +34,10 @@ export class Application
 
         this._camera = new Camera({position: vec3.fromValues(-0.5, 1, 3)});
         this._camera.rotateY(-0.33);
-        this._scene = new Scene({});
+        this._scene = new Scene({
+            lightDir: vec3.fromValues(0.35, 0.76, 0.5),
+            backgroundColor: COLORS.BLUE,
+        });
 
         this._ui = new UserInterface(this._appContainer);
         this._input = new Input(this);
@@ -46,10 +49,12 @@ export class Application
         // Add a sphere
         this._scene.addObject(
             new OBJECTS.Sphere({
-                position: vec3.fromValues(0, -1, 0),
+                position: vec3.fromValues(0.5, -1, -1),
                 radius: 0.5,
                 material: new Material({
-                    baseColor: COLORS.RED
+                    baseColor: COLORS.RED,
+                    roughness: Math.random(),
+                    metallic: Math.random()
                 })
             })
         );
@@ -57,10 +62,12 @@ export class Application
         // Add a cube
         this._scene.addObject(
             new OBJECTS.Cube({
-                position: vec3.fromValues(-0.55, -0.25, 0),
+                position: vec3.fromValues(-0.55, -0.28, 0),
                 size: 0.5,
                 material: new Material({
-                    baseColor: COLORS.GREEN
+                    baseColor: COLORS.GREEN,
+                    roughness: Math.random(),
+                    metallic: Math.random()
                 })
             })
         );
@@ -70,7 +77,9 @@ export class Application
             new OBJECTS.Plane({
                 size: 4,
                 material: new Material({
-                    baseColor: COLORS.YELLOW
+                    baseColor: COLORS.YELLOW,
+                    roughness: Math.random(),
+                    metallic: Math.random()
                 })
             })
         );

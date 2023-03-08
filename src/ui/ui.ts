@@ -46,10 +46,6 @@ export class UserInterface
         let selectedObjectContainer = document.createElement("selected-object-container") as HTMLDivElement;
         selectedObjectContainer.id = "selected-object-container";
         this._dom.appendChild(selectedObjectContainer);
-
-        let objectsListContainer = document.createElement("objects-list-container") as HTMLDivElement;
-        objectsListContainer.id = "objects-list-container";
-        this._dom.appendChild(objectsListContainer);
     }
 
     public setSelectedObject(object: RenderObject | null)
@@ -103,20 +99,19 @@ export class UserInterface
 
         layersContainer.appendChild(layersLabel);
 
-        const albedo = document.createElement("input");
-        albedo.id = "albedo";
-        albedo.type = "checkbox";
-        albedo.checked = this._renderer.diffuseLighting;
-        albedo.addEventListener("input", (e) => {
+        const material = document.createElement("input");
+        material.id = "albedo";
+        material.type = "checkbox";
+        material.checked = this._renderer.diffuseLighting;
+        material.addEventListener("input", (e) => {
             this._renderer.diffuseLighting = (e.target as HTMLInputElement).checked;
         });
 
-        const albedoLabel = document.createElement("label");
-        albedoLabel.htmlFor = "albedo";
-        albedoLabel.innerText = "Albedo";
+        const materialLabel = document.createElement("label");
+        materialLabel.innerText = "Material";
 
-        layersContainer.appendChild(albedo);
-        layersContainer.appendChild(albedoLabel);
+        layersContainer.appendChild(material);
+        layersContainer.appendChild(materialLabel);
 
         const shadowsInput = document.createElement("input");
         shadowsInput.id = "shadows";
@@ -208,7 +203,7 @@ export class UserInterface
         maxBouncesInput.type = "number";
         maxBouncesInput.min = "0";
         maxBouncesInput.max = "3";
-        maxBouncesInput.value = "1";
+        maxBouncesInput.value = this._renderer.bounceLimit.toString();
         maxBouncesInput.addEventListener("input", (e) => {
             this._renderer.bounceLimit = (e.target as HTMLInputElement).valueAsNumber;
         });
@@ -290,7 +285,6 @@ export class UserInterface
     private setUpBackgroundColor(): void
     {
         const bgColorContainer = document.createElement("div");
-        bgColorContainer.id = "bg-color-container";
         bgColorContainer.style.position = "relative";
         bgColorContainer.style.border = "1px solid black";
 
@@ -311,7 +305,6 @@ export class UserInterface
         bgColorContainer.appendChild(bgColorLabel);
 
         const bgColorR = document.createElement("input");
-        bgColorR.id = "bgColorR";
         bgColorR.type = "color";
         bgColorR.value = vec4ToHex(this._scene.backgroundColor);
         bgColorR.style.width = "100%";
@@ -367,7 +360,6 @@ export class UserInterface
     private setUpSphere(index: number): HTMLDivElement
     {
         const sphereContainer = document.createElement("div");
-        sphereContainer.id = `sphere-${index}-container`;
         sphereContainer.style.position = "relative";
         sphereContainer.style.border = "1px solid black";
         sphereContainer.style.padding = "5px";
@@ -379,11 +371,8 @@ export class UserInterface
         sphereContainer.appendChild(sphereLabel);
 
         const spherePropertiesContainer = document.createElement("div");
-        spherePropertiesContainer.id = `sphere-${index}-properties-container`;
-        spherePropertiesContainer.style.display = "flex";
 
         const sphereRadius = document.createElement("input");
-        sphereRadius.id = `sphere-${index}-radius`;
         sphereRadius.type = "range";
         sphereRadius.min = "0";
         sphereRadius.max = "1";
@@ -399,32 +388,12 @@ export class UserInterface
         sphereRadiusLabel.innerText = `Radius`;
 
         const sphereRadiusContainer = document.createElement("div");
-        sphereRadiusContainer.id = `sphere-${index}-radius-container`;
 
         sphereRadiusContainer.appendChild(sphereRadiusLabel);
         sphereRadiusContainer.appendChild(sphereRadius);
 
-        /* const sphereColor = document.createElement("input");
-        sphereColor.id = `sphere-${index}-color`;
-        sphereColor.type = "color";
-        sphereColor.value = vec4ToHex(this._scene.objects[index].color);
-        sphereColor.style.width = "100%";
-        sphereColor.addEventListener("input", (e) => {
-            this._scene.objects[index].color = hexToVec4((e.target as HTMLInputElement).value);
-        });
-
-        const sphereColorLabel = document.createElement("label");
-        sphereColorLabel.htmlFor = `sphere-${index}-color`;
-        sphereColorLabel.innerText = `Color`;
-
-        const sphereColorContainer = document.createElement("div");
-        sphereColorContainer.id = `sphere-${index}-color-container`;
-
-        sphereColorContainer.appendChild(sphereColorLabel);
-        sphereColorContainer.appendChild(sphereColor); */
-
         spherePropertiesContainer.appendChild(sphereRadiusContainer);
-        //spherePropertiesContainer.appendChild(sphereColorContainer);
+        spherePropertiesContainer.appendChild(this.setUpMaterial(index));
 
         sphereContainer.appendChild(spherePropertiesContainer);
 
@@ -434,7 +403,6 @@ export class UserInterface
     private setUpCube(index: number): HTMLDivElement
     {
         const cubeContainer = document.createElement("div");
-        cubeContainer.id = `cube-${index}-container`;
         cubeContainer.style.position = "relative";
         cubeContainer.style.border = "1px solid black";
         cubeContainer.style.padding = "5px";
@@ -446,11 +414,8 @@ export class UserInterface
         cubeContainer.appendChild(cubeLabel);
 
         const cubePropertiesContainer = document.createElement("div");
-        cubePropertiesContainer.id = `cube-${index}-properties-container`;
-        cubePropertiesContainer.style.display = "flex";
 
         const cubeSize = document.createElement("input");
-        cubeSize.id = `cube-${index}-size`;
         cubeSize.type = "range";
         cubeSize.min = "0";
         cubeSize.max = "1";
@@ -466,32 +431,12 @@ export class UserInterface
         cubeSizeLabel.innerText = `Size`;
 
         const cubeSizeContainer = document.createElement("div");
-        cubeSizeContainer.id = `cube-${index}-size-container`;
 
         cubeSizeContainer.appendChild(cubeSizeLabel);
         cubeSizeContainer.appendChild(cubeSize);
 
-        /* const cubeColor = document.createElement("input");
-        cubeColor.id = `cube-${index}-color`;
-        cubeColor.type = "color";
-        cubeColor.value = vec4ToHex(this._scene.objects[index].color);
-        cubeColor.style.width = "100%";
-        cubeColor.addEventListener("input", (e) => {
-            this._scene.objects[index].color = hexToVec4((e.target as HTMLInputElement).value);
-        });
-
-        const cubeColorLabel = document.createElement("label");
-        cubeColorLabel.htmlFor = `cube-${index}-color`;
-        cubeColorLabel.innerText = `Color`;
-
-        const cubeColorContainer = document.createElement("div");
-        cubeColorContainer.id = `cube-${index}-color-container`;
-
-        cubeColorContainer.appendChild(cubeColorLabel);
-        cubeColorContainer.appendChild(cubeColor); */
-
         cubePropertiesContainer.appendChild(cubeSizeContainer);
-        //cubePropertiesContainer.appendChild(cubeColorContainer);
+        cubePropertiesContainer.appendChild(this.setUpMaterial(index));
 
         cubeContainer.appendChild(cubePropertiesContainer);
 
@@ -501,7 +446,6 @@ export class UserInterface
     private setUpPlane(index: number): HTMLDivElement
     {
         const planeContainer = document.createElement("div");
-        planeContainer.id = `plane-${index}-container`;
         planeContainer.style.position = "relative";
         planeContainer.style.border = "1px solid black";
         planeContainer.style.padding = "5px";
@@ -513,11 +457,8 @@ export class UserInterface
         planeContainer.appendChild(planeLabel);
 
         const planePropertiesContainer = document.createElement("div");
-        planePropertiesContainer.id = `plane-${index}-properties-container`;
-        planePropertiesContainer.style.display = "flex";
 
         const planeSize = document.createElement("input");
-        planeSize.id = `plane-${index}-size`;
         planeSize.type = "range";
         planeSize.min = "0";
         planeSize.max = "10";
@@ -533,32 +474,12 @@ export class UserInterface
         planeSizeLabel.innerText = `Size`;
 
         const planeSizeContainer = document.createElement("div");
-        planeSizeContainer.id = `plane-${index}-size-container`;
 
         planeSizeContainer.appendChild(planeSizeLabel);
         planeSizeContainer.appendChild(planeSize);
 
-        /* const planeColor = document.createElement("input");
-        planeColor.id = `plane-${index}-color`;
-        planeColor.type = "color";
-        planeColor.value = vec4ToHex(this._scene.objects[index].color);
-        planeColor.style.width = "100%";
-        planeColor.addEventListener("input", (e) => {
-            this._scene.objects[index].color = hexToVec4((e.target as HTMLInputElement).value);
-        });
-
-        const planeColorLabel = document.createElement("label");
-        planeColorLabel.htmlFor = `plane-${index}-color`;
-        planeColorLabel.innerText = `Color`;
-
-        const planeColorContainer = document.createElement("div");
-        planeColorContainer.id = `plane-${index}-color-container`;
-
-        planeColorContainer.appendChild(planeColorLabel);
-        planeColorContainer.appendChild(planeColor); */
-
         planePropertiesContainer.appendChild(planeSizeContainer);
-        //planePropertiesContainer.appendChild(planeColorContainer);
+        planePropertiesContainer.appendChild(this.setUpMaterial(index));
 
         planeContainer.appendChild(planePropertiesContainer);
 
@@ -568,7 +489,6 @@ export class UserInterface
     private setUpCircle(index: number): HTMLDivElement
     {
         const circleContainer = document.createElement("div");
-        circleContainer.id = `circle-${index}-container`;
         circleContainer.style.position = "relative";
         circleContainer.style.border = "1px solid black";
         circleContainer.style.padding = "5px";
@@ -580,11 +500,8 @@ export class UserInterface
         circleContainer.appendChild(circleLabel);
 
         const circlePropertiesContainer = document.createElement("div");
-        circlePropertiesContainer.id = `circle-${index}-properties-container`;
-        circlePropertiesContainer.style.display = "flex";
 
         const circleRadius = document.createElement("input");
-        circleRadius.id = `circle-${index}-radius`;
         circleRadius.type = "range";
         circleRadius.min = "0";
         circleRadius.max = "1";
@@ -600,36 +517,95 @@ export class UserInterface
         circleRadiusLabel.innerText = `Radius`;
 
         const circleRadiusContainer = document.createElement("div");
-        circleRadiusContainer.id = `circle-${index}-radius-container`;
 
         circleRadiusContainer.appendChild(circleRadiusLabel);
         circleRadiusContainer.appendChild(circleRadius);
 
-        /* const circleColor = document.createElement("input");
-        circleColor.id = `circle-${index}-color`;
-        circleColor.type = "color";
-        circleColor.value = vec4ToHex(this._scene.objects[index].color);
-        circleColor.style.width = "100%";
-        circleColor.addEventListener("input", (e) => {
-            this._scene.objects[index].color = hexToVec4((e.target as HTMLInputElement).value);
-        }   );
-
-        const circleColorLabel = document.createElement("label");
-        circleColorLabel.htmlFor = `circle-${index}-color`;
-        circleColorLabel.innerText = `Color`;
-
-        const circleColorContainer = document.createElement("div");
-        circleColorContainer.id = `circle-${index}-color-container`;
-
-        circleColorContainer.appendChild(circleColorLabel);
-        circleColorContainer.appendChild(circleColor); */
-
         circlePropertiesContainer.appendChild(circleRadiusContainer);
-        //circlePropertiesContainer.appendChild(circleColorContainer);
+        circlePropertiesContainer.appendChild(this.setUpMaterial(index));
 
         circleContainer.appendChild(circlePropertiesContainer);
 
+
         return circleContainer;
+    }
+
+    private setUpMaterial(index: number): HTMLDivElement
+    {
+        const materialContainer = document.createElement("div");
+        materialContainer.style.position = "relative";
+
+        const materialLabel = document.createElement("label");
+        materialLabel.innerText = `Material`;
+
+        materialContainer.appendChild(materialLabel);
+
+        const materialPropertiesContainer = document.createElement("div");
+        
+        const materialColor = document.createElement("input");
+        materialColor.type = "color";
+        materialColor.value = vec4ToHex(this._scene.objects[index].material.baseColor);
+        materialColor.style.width = "100%";
+        materialColor.addEventListener("input", (e) => {
+            this._scene.objects[index].material.baseColor = hexToVec4((e.target as HTMLInputElement).value);
+        });
+
+        const materialColorLabel = document.createElement("label");
+        materialColorLabel.htmlFor = `material-${index}-color`;
+        materialColorLabel.innerText = `Color`;
+
+        const materialColorContainer = document.createElement("div");
+
+        materialColorContainer.appendChild(materialColorLabel);
+        materialColorContainer.appendChild(materialColor);
+
+        const materialRoughness = document.createElement("input");
+        materialRoughness.type = "range";
+        materialRoughness.min = "0";
+        materialRoughness.max = "1";
+        materialRoughness.step = "0.01";
+        materialRoughness.value = this._scene.objects[index].material.roughness.toString();
+        materialRoughness.style.width = "100%";
+        materialRoughness.addEventListener("input", (e) => {
+            this._scene.objects[index].material.roughness = parseFloat((e.target as HTMLInputElement).value);
+        });
+
+        const materialRoughnessLabel = document.createElement("label");
+        materialRoughnessLabel.htmlFor = `material-${index}-roughness`;
+        materialRoughnessLabel.innerText = `Roughness`;
+
+        const materialRoughnessContainer = document.createElement("div");
+
+        materialRoughnessContainer.appendChild(materialRoughnessLabel);
+        materialRoughnessContainer.appendChild(materialRoughness);
+
+        const materialMetallic = document.createElement("input");
+        materialMetallic.type = "range";
+        materialMetallic.min = "0";
+        materialMetallic.max = "1";
+        materialMetallic.step = "0.01";
+        materialMetallic.value = this._scene.objects[index].material.metallic.toString();
+        materialMetallic.style.width = "100%";
+        materialMetallic.addEventListener("input", (e) => {
+            this._scene.objects[index].material.metallic = parseFloat((e.target as HTMLInputElement).value);
+        });
+
+        const materialMetallicLabel = document.createElement("label");
+        materialMetallicLabel.htmlFor = `material-${index}-metallic`;
+        materialMetallicLabel.innerText = `Metallic`;
+
+        const materialMetallicContainer = document.createElement("div");
+
+        materialMetallicContainer.appendChild(materialMetallicLabel);
+        materialMetallicContainer.appendChild(materialMetallic);
+
+        materialPropertiesContainer.appendChild(materialColorContainer);
+        materialPropertiesContainer.appendChild(materialRoughnessContainer);
+        materialPropertiesContainer.appendChild(materialMetallicContainer);
+
+        materialContainer.appendChild(materialPropertiesContainer);
+
+        return materialContainer;
     }
     public get dom(): HTMLDivElement { return this._dom; }
 }

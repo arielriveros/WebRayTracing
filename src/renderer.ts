@@ -4,7 +4,6 @@ import Scene from "./scene/scene";
 import Ray from "./ray/ray";
 import RenderObject, { RayIntersection } from "./objects/renderObject";
 import HitData from "./ray/hitData";
-import * as OBJECTS from "./objects/objects";
 
 export default class Renderer
 {
@@ -18,8 +17,8 @@ export default class Renderer
     private _camera!: Camera;
     private _bias: number = 0.00001;
     private _clearColor: vec4 = vec4.fromValues(0, 0, 0, 1);
-    private _bounceLimit: number = 1;
-    private _previousBoundceLimit: number = 1;
+    private _bounceLimit: number = 2;
+    private _previousBounceLimit: number = this._bounceLimit;
     private _shadowBias: number = 0.02;
     private _lastUpdate: number = 0;
     private _updateInterval: number = 10;
@@ -70,7 +69,7 @@ export default class Renderer
         if(this._camera.isMoving)
             this._bounceLimit = 1;
         else
-            this._bounceLimit = this._previousBoundceLimit;
+            this._bounceLimit = this._previousBounceLimit;
 
         for(let y = 0; y < this._renderTarget.height; y++)
         {
@@ -271,8 +270,9 @@ export default class Renderer
     public get renderTarget(): HTMLCanvasElement { return this._renderTarget; }
     public get scene(): Scene { return this._scene; }
 
+    public get bounceLimit(): number { return this._bounceLimit; }
     public set bounceLimit(value: number) { 
-        this._previousBoundceLimit = value;
+        this._previousBounceLimit = value;
         this._bounceLimit = value; 
     }
 
