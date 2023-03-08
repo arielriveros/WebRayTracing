@@ -348,7 +348,15 @@ export class UserInterface
         });
 
         objectsContainer.appendChild(addPlaneButton);
-        
+
+        const addCircleButton = document.createElement("button");
+        addCircleButton.innerText = "Add Circle";
+        addCircleButton.addEventListener("click", () => {
+            this._scene.addObject(new OBJECTS.Circle({radius: 0.5}));
+        });
+
+        objectsContainer.appendChild(addCircleButton);
+
         this._dom.appendChild(objectsContainer);
     }
 

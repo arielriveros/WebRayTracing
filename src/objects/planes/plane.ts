@@ -79,6 +79,6 @@ export class Plane extends RenderObject
 
     public override getNormalAtPoint(point: vec3): vec3
     {
-        return vec3.negate(vec3.create(), this.normal);
+        return vec3.negate(vec3.create(), this._normal);
     }
 }
