@@ -36,6 +36,7 @@ export default class Input
                     break;
                 case 2:
                     this._app.camera.rotateY(-e.movementX / 500);
+                    this._app.camera.rotateX(e.movementY / 500);
                     this._app.camera.isMoving = true;
                     break;
                 case 3:

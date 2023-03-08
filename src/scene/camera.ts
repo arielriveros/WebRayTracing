@@ -50,6 +50,7 @@ export default class Camera
 
     public update(): void
     {
+        this.calculateForward();
         this.calculateProjection();
         this.calculateView();
         this.calculateRayDirections();
@@ -86,8 +87,21 @@ export default class Camera
     public rotateY(rate: number): void
     {
         this._rotation[1] += rate;
-        this._forward = vec3.fromValues(Math.sin(this._rotation[1]), 0, Math.cos(this._rotation[1]));
         this.update();
+    }
+
+    public rotateX(rate: number): void {
+        this._rotation[0] += rate;
+        this.update();
+    }
+
+    public calculateForward(): void
+    {
+        this._forward = vec3.fromValues(
+            Math.sin(this._rotation[1]) * Math.cos(this._rotation[0]),
+            Math.sin(this._rotation[0]),
+            Math.cos(this._rotation[1]) * Math.cos(this._rotation[0])
+        );
     }
 
     public calculateRayDirections(): void
