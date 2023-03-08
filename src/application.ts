@@ -59,19 +59,6 @@ export class Application
             })
         );
 
-        // Add a sphere
-        this._scene.addObject(
-            new OBJECTS.Sphere({
-                position: vec3.fromValues(0, 0, 101),
-                radius: 100,
-                material: new Material({
-                    baseColor: COLORS.CYAN,
-                    roughness: Math.random(),
-                    metallic: Math.random()
-                })
-            })
-        );
-
         // Add a cube
         this._scene.addObject(
             new OBJECTS.Cube({

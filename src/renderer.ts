@@ -33,7 +33,7 @@ export default class Renderer
 
     public accumulate: boolean = true;
     public diffuseLighting: boolean = true;
-    public directionalShadows: boolean = false;
+    public directionalShadows: boolean = true;
     public reflections: boolean = true;
     public ambientOcclusion: boolean = false;
     
@@ -73,13 +73,10 @@ export default class Renderer
     }
 
     public render(): void {
-
         this._lastUpdate++;
         if(this._lastUpdate % this.updateInterval !== 0 && this.updateInterval !== 0)
             return;
 
-        if(this._camera.isMoving)
-            this._bounceLimit = 1;
         else
             this._bounceLimit = this._previousBounceLimit;
 
@@ -88,9 +85,7 @@ export default class Renderer
             this._accumulationBuffer = new Array<vec4>(this._renderTarget.width * this._renderTarget.height);
         
             for(let i = 0; i < this._accumulationBuffer.length; i++)
-            {
                 this._accumulationBuffer[i] = vec4.fromValues(0, 0, 0, 1);
-            }
         }
 
         for(let y = 0; y < this._renderTarget.height; y++)
@@ -105,12 +100,12 @@ export default class Renderer
                     this._rgbBuffer[(x + y * this._renderTarget.width) * 4 + 2] = this._clearColor[2] * 255;
                     this._rgbBuffer[(x + y * this._renderTarget.width) * 4 + 3] = this._clearColor[3] * 255;
 
-                    this._accumulationBuffer[x + y * this._renderTarget.width] = vec4.fromValues(0, 0, 0, 1);
                     continue;
                 }
                 let color: vec4 = this.rayGen(x, y);
                 vec4.add(this._accumulationBuffer[x + y * this._renderTarget.width], this._accumulationBuffer[x + y * this._renderTarget.width], color)
-                if(this.accumulate)
+                
+                if(this.accumulate && 1/this._frameIndex > 0.1)
                 {
                     let accumulatedColor: vec4 = vec4.clone(this._accumulationBuffer[x + y * this._renderTarget.width]) ;
                     vec4.scale(accumulatedColor, accumulatedColor, 1 / this._frameIndex);
@@ -125,9 +120,23 @@ export default class Renderer
                     this._rgbBuffer[index + 2] = accumulatedColor[2] * 255;
                     this._rgbBuffer[index + 3] = accumulatedColor[3] * 255;
                 }
+                else
+                {
+                    let index = (x + y * this._renderTarget.width) * 4;
+                    this._rgbBuffer[index]     = color[0] * 255;
+                    this._rgbBuffer[index + 1] = color[1] * 255;
+                    this._rgbBuffer[index + 2] = color[2] * 255;
+                    this._rgbBuffer[index + 3] = color[3] * 255;
+                }
             }
         }
         this.uploadBuffer();
+
+        if(this._camera.isMoving)
+        {
+            this._bounceLimit = 1;
+            this.resetFrameIndex();
+        }
     }
 
     private uploadBuffer(): void
@@ -188,7 +197,7 @@ export default class Renderer
             {
                 // ambient occlusion
                 let occlusion: number = 0;
-                const numSamples: number = 16;
+                const numSamples: number = 8;
                 const sampleRadius: number = 0.2;
                 const sampleOffset: vec3 = vec3.create();
                 const occlusionRay: Ray = new Ray();
@@ -243,15 +252,15 @@ export default class Renderer
 
             if(this.reflections && this._bounceLimit > 1)
             {
-                reflectiveFactor *= 0.4;
+                let objectMaterial: Material = this._scene.objects[hitData.objectIndex].material;
+                reflectiveFactor *= objectMaterial.metallic;
     
                 ray.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, this._bias);
 
-                let objectMaterial: Material = this._scene.objects[hitData.objectIndex].material;
                 let reflectionOffset = vec3.fromValues(
-                    Math.random()*0.5 * objectMaterial.roughness, 
-                    Math.random()*0.5 * objectMaterial.roughness, 
-                    Math.random()*0.5 * objectMaterial.roughness
+                    (Math.random()*(-0.25) + Math.random()*0.25) * objectMaterial.roughness, 
+                    (Math.random()*(-0.25) + Math.random()*0.25) * objectMaterial.roughness, 
+                    (Math.random()*(-0.25) + Math.random()*0.25) * objectMaterial.roughness
                 );
                 let offsetWorldNormal = vec3.add(vec3.create(), hitData.worldNormal, reflectionOffset);
                 let reflectionDir = vec3.sub(
