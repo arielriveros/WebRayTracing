@@ -11,22 +11,29 @@ export default class Renderer
     private _renderTarget: HTMLCanvasElement;
     private _renderContext: CanvasRenderingContext2D;
     private _rgbBuffer: Uint8ClampedArray;
-    private _width: number = 640;
-    private _height: number = 480;
     private _image!: ImageData;
+    private _frameIndex: number = 1;
+    private _accumulationBuffer: Array<vec4> = [];
+    
     private _scene!: Scene;
     private _camera!: Camera;
+    
+    private _width: number = 640;
+    private _height: number = 480;
+    
     private _bias: number = 1e-8;
     private _clearColor: vec4 = vec4.fromValues(0, 0, 0, 1);
-    
+
     private _bounceLimit: number = 2;
     private _previousBounceLimit: number = this._bounceLimit;
-    private _shadowBias: number = 0.02;
     private _lastUpdate: number = 0;
-    private _updateInterval: number = 10;
+    
+    public shadowBias: number = 0.02;
+    public updateInterval: number = 10;
 
+    public accumulate: boolean = true;
     public diffuseLighting: boolean = true;
-    public directionalShadows: boolean = true;
+    public directionalShadows: boolean = false;
     public reflections: boolean = true;
     public ambientOcclusion: boolean = false;
     
@@ -38,6 +45,9 @@ export default class Renderer
         this._renderTarget.width = this._width;
         this._renderTarget.height = this._height;
 
+        // Creates empty image data of the size of the canvas
+        this._image = this._renderContext.createImageData(this._renderTarget.width, this._renderTarget.height);
+        
         // Set the canvas to be behind the UI
         this._renderTarget.style.position = "absolute";
         this._renderTarget.style.zIndex = "-1";
@@ -65,7 +75,7 @@ export default class Renderer
     public render(): void {
 
         this._lastUpdate++;
-        if(this._lastUpdate % this._updateInterval !== 0 && this._updateInterval !== 0)
+        if(this._lastUpdate % this.updateInterval !== 0 && this.updateInterval !== 0)
             return;
 
         if(this._camera.isMoving)
@@ -73,26 +83,48 @@ export default class Renderer
         else
             this._bounceLimit = this._previousBounceLimit;
 
+        if(this._frameIndex === 1)
+        {
+            this._accumulationBuffer = new Array<vec4>(this._renderTarget.width * this._renderTarget.height);
+        
+            for(let i = 0; i < this._accumulationBuffer.length; i++)
+            {
+                this._accumulationBuffer[i] = vec4.fromValues(0, 0, 0, 1);
+            }
+        }
+
         for(let y = 0; y < this._renderTarget.height; y++)
         {
             for(let x = 0; x < this._renderTarget.width; x++)
             {
                 // skip some pixels to speed up rendering when camera is moving
-                if(this._camera.isMoving && (x % 2 == 0 || y % 2 == 0))
+                if(this._camera.isMoving && (x % 2 == 0 || y % 2 == 0 || x % 3 == 0 || y % 3 == 0))
                 {
                     this._rgbBuffer[(x + y * this._renderTarget.width) * 4] = this._clearColor[0] * 255;
                     this._rgbBuffer[(x + y * this._renderTarget.width) * 4 + 1] = this._clearColor[1] * 255;
                     this._rgbBuffer[(x + y * this._renderTarget.width) * 4 + 2] = this._clearColor[2] * 255;
+                    this._rgbBuffer[(x + y * this._renderTarget.width) * 4 + 3] = this._clearColor[3] * 255;
+
+                    this._accumulationBuffer[x + y * this._renderTarget.width] = vec4.fromValues(0, 0, 0, 1);
                     continue;
                 }
-                
                 let color: vec4 = this.rayGen(x, y);
-                
-                let index = (x + y * this._renderTarget.width) * 4;
-                this._rgbBuffer[index]     = color[0] * 255;
-                this._rgbBuffer[index + 1] = color[1] * 255;
-                this._rgbBuffer[index + 2] = color[2] * 255;
-                this._rgbBuffer[index + 3] = color[3] * 255;
+                vec4.add(this._accumulationBuffer[x + y * this._renderTarget.width], this._accumulationBuffer[x + y * this._renderTarget.width], color)
+                if(this.accumulate)
+                {
+                    let accumulatedColor: vec4 = vec4.clone(this._accumulationBuffer[x + y * this._renderTarget.width]) ;
+                    vec4.scale(accumulatedColor, accumulatedColor, 1 / this._frameIndex);
+
+                    //clamp accumulatedColor
+                    vec4.min(accumulatedColor, accumulatedColor, vec4.fromValues(1, 1, 1, 1));
+                    vec4.max(accumulatedColor, accumulatedColor, vec4.create());
+
+                    let index = (x + y * this._renderTarget.width) * 4;
+                    this._rgbBuffer[index]     = accumulatedColor[0] * 255;
+                    this._rgbBuffer[index + 1] = accumulatedColor[1] * 255;
+                    this._rgbBuffer[index + 2] = accumulatedColor[2] * 255;
+                    this._rgbBuffer[index + 3] = accumulatedColor[3] * 255;
+                }
             }
         }
         this.uploadBuffer();
@@ -100,12 +132,16 @@ export default class Renderer
 
     private uploadBuffer(): void
     {
-        // Creates empty image data of the size of the canvas
-        this._image = this._renderContext.createImageData(this._renderTarget.width, this._renderTarget.height);
+        
         // Copies the data from the rgb buffer to the image buffer
         this._image.data.set(this._rgbBuffer);
         // Puts the image data on the canvas
         this._renderContext.putImageData(this._image, 0, 0);
+
+        if(this.accumulate)
+            this._frameIndex++;
+        else
+            this.resetFrameIndex();
     }
 
     private rayGen(x: number, y: number): vec4
@@ -145,7 +181,6 @@ export default class Renderer
                 color[2] *= diffuse;
 
                 vec4.scaleAndAdd(finalColor, finalColor, color, reflectiveFactor);
-
             }
 
 
@@ -191,7 +226,7 @@ export default class Renderer
                 shadowRay.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, this._bias);
                 // shador ray direction with random offset to artificially soften shadows
                 let randomOffset = vec3.create();
-                vec3.random(randomOffset, this._shadowBias);
+                vec3.random(randomOffset, this.shadowBias);
                 shadowRay.direction = vec3.sub(vec3.create(), this._scene.directionalLight.direction, randomOffset);
                 shadowRay.direction = vec3.negate(shadowRay.direction, shadowRay.direction);
                 let shadowHitData = this.traceRay(shadowRay);
@@ -213,7 +248,12 @@ export default class Renderer
                 ray.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, this._bias);
 
                 let objectMaterial: Material = this._scene.objects[hitData.objectIndex].material;
-                let offsetWorldNormal = vec3.scaleAndAdd(vec3.create(), hitData.worldNormal, vec3.random(vec3.create(), 0.025), objectMaterial.roughness);
+                let reflectionOffset = vec3.fromValues(
+                    Math.random()*0.5 * objectMaterial.roughness, 
+                    Math.random()*0.5 * objectMaterial.roughness, 
+                    Math.random()*0.5 * objectMaterial.roughness
+                );
+                let offsetWorldNormal = vec3.add(vec3.create(), hitData.worldNormal, reflectionOffset);
                 let reflectionDir = vec3.sub(
                     vec3.create(), 
                     ray.direction, 
@@ -280,6 +320,8 @@ export default class Renderer
         return this._scene.objects[hitData.objectIndex];
     }
 
+    public resetFrameIndex(): void { this._frameIndex = 1; }
+
     public get renderTarget(): HTMLCanvasElement { return this._renderTarget; }
     public get scene(): Scene { return this._scene; }
 
@@ -288,11 +330,5 @@ export default class Renderer
         this._previousBounceLimit = value;
         this._bounceLimit = value; 
     }
-
-    public get shadowBias(): number { return this._shadowBias; }
-    public set shadowBias(value: number) { this._shadowBias = value; }
-
-    public get updateInterval(): number { return this._updateInterval; }
-    public set updateInterval(value: number) { this._updateInterval = value; }
 
 }

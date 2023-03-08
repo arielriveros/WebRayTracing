@@ -163,7 +163,33 @@ export class UserInterface
         layersContainer.appendChild(aoInput);
         layersContainer.appendChild(aoLabel);
         layersContainer.appendChild(document.createElement("br"));
+
+        const acctumulation = document.createElement("input");
+        acctumulation.id = "acctumulation";
+        acctumulation.type = "checkbox";
+        acctumulation.checked = this._renderer.accumulate;
+        acctumulation.addEventListener("input", (e) => {
+            this._renderer.accumulate = (e.target as HTMLInputElement).checked;
+        });
+
+        const acctumulationLabel = document.createElement("label");
+        acctumulationLabel.htmlFor = "acctumulation";
+        acctumulationLabel.innerText = "Accumulation";
+
+        layersContainer.appendChild(acctumulation);
+        layersContainer.appendChild(acctumulationLabel);
+        layersContainer.appendChild(document.createElement("br"));
+
+        const resetAccumulation = document.createElement("button");
+        resetAccumulation.innerText = "Reset Accumulation";
+        resetAccumulation.addEventListener("click", () => {
+            this._renderer.resetFrameIndex();
+        });
+
+        layersContainer.appendChild(resetAccumulation);
         
+
+
         this._dom.appendChild(layersContainer);
     }
 

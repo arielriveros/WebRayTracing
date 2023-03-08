@@ -33,16 +33,19 @@ export default class Input
                     this._app.camera.moveForward(-e.movementY / 100);
                     this._app.camera.moveRight(e.movementX / 100);
                     this._app.camera.isMoving = true;
+                    this._app.renderer.resetFrameIndex();
                     break;
                 case 2:
                     this._app.camera.rotateY(-e.movementX / 500);
                     this._app.camera.rotateX(e.movementY / 500);
                     this._app.camera.isMoving = true;
+                    this._app.renderer.resetFrameIndex();
                     break;
                 case 3:
                     this._app.camera.moveUp(e.movementY / 100);
                     this._app.camera.moveRight(e.movementX / 100);
                     this._app.camera.isMoving = true;
+                    this._app.renderer.resetFrameIndex();
                     break;
                 default:
                     this._app.camera.isMoving = false;
