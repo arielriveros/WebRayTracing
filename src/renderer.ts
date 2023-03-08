@@ -4,6 +4,7 @@ import Scene from "./scene/scene";
 import Ray from "./ray/ray";
 import RenderObject, { RayIntersection } from "./objects/renderObject";
 import HitData from "./ray/hitData";
+import Material from "./objects/material";
 
 export default class Renderer
 {
@@ -15,18 +16,19 @@ export default class Renderer
     private _image!: ImageData;
     private _scene!: Scene;
     private _camera!: Camera;
-    private _bias: number = 0.00001;
+    private _bias: number = 1e-8;
     private _clearColor: vec4 = vec4.fromValues(0, 0, 0, 1);
+    
     private _bounceLimit: number = 2;
     private _previousBounceLimit: number = this._bounceLimit;
     private _shadowBias: number = 0.02;
     private _lastUpdate: number = 0;
     private _updateInterval: number = 10;
 
-    private _diffuseLighting: boolean = true;
-    private _directionalShadows: boolean = true;
-    private _reflections: boolean = true;
-    private _ambientOcclusion: boolean = false;
+    public diffuseLighting: boolean = true;
+    public directionalShadows: boolean = true;
+    public reflections: boolean = true;
+    public ambientOcclusion: boolean = false;
     
     constructor(appContainer: HTMLDivElement)
     {
@@ -126,7 +128,7 @@ export default class Renderer
             
             let color = vec4.create();
 
-            if(!this._diffuseLighting)
+            if(!this.diffuseLighting)
             {
                 finalColor = vec4.fromValues(1, 1, 1, 1);
                 vec4.scaleAndAdd(finalColor, finalColor, color, reflectiveFactor);
@@ -147,7 +149,7 @@ export default class Renderer
             }
 
 
-            if(this._ambientOcclusion && !this._camera.isMoving)
+            if(this.ambientOcclusion && !this._camera.isMoving)
             {
                 // ambient occlusion
                 let occlusion: number = 0;
@@ -182,7 +184,7 @@ export default class Renderer
                 finalColor[2] -= occlusion * occlusionFactor;
             }
             
-            if(this._directionalShadows && !this._camera.isMoving)
+            if(this.directionalShadows && !this._camera.isMoving)
             {
                 // calculate shadow
                 let shadowRay = new Ray();
@@ -204,12 +206,23 @@ export default class Renderer
             }
 
 
-            if(this._reflections && this._bounceLimit > 1)
+            if(this.reflections && this._bounceLimit > 1)
             {
                 reflectiveFactor *= 0.4;
     
                 ray.origin = vec3.scaleAndAdd(vec3.create(), hitData.worldPosition, hitData.worldNormal, this._bias);
-                let reflectionDir = vec3.sub(vec3.create(), ray.direction, vec3.scale(vec3.create(), hitData.worldNormal, 2 * vec3.dot(hitData.worldNormal, ray.direction)));
+
+                let objectMaterial: Material = this._scene.objects[hitData.objectIndex].material;
+                let offsetWorldNormal = vec3.scaleAndAdd(vec3.create(), hitData.worldNormal, vec3.random(vec3.create(), 0.025), objectMaterial.roughness);
+                let reflectionDir = vec3.sub(
+                    vec3.create(), 
+                    ray.direction, 
+                    vec3.scale(
+                        vec3.create(), 
+                        offsetWorldNormal, 
+                        2 * vec3.dot(offsetWorldNormal, ray.direction)
+                    )
+                );
                 ray.direction = reflectionDir;
             }        
         }
@@ -282,15 +295,4 @@ export default class Renderer
     public get updateInterval(): number { return this._updateInterval; }
     public set updateInterval(value: number) { this._updateInterval = value; }
 
-    public get diffuseLighting(): boolean { return this._diffuseLighting; }
-    public set diffuseLighting(value: boolean) { this._diffuseLighting = value; }
-
-    public get directionalShadows(): boolean { return this._directionalShadows; }
-    public set directionalShadows(value: boolean) { this._directionalShadows = value; }
-
-    public get reflections(): boolean { return this._reflections; }
-    public set reflections(value: boolean) { this._reflections = value; }
-
-    public get ambientOcclusion(): boolean { return this._ambientOcclusion; }
-    public set ambientOcclusion(value: boolean) { this._ambientOcclusion = value; }
 }

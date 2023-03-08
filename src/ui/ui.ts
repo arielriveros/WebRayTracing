@@ -99,8 +99,10 @@ export class UserInterface
 
         layersContainer.appendChild(layersLabel);
 
+        layersContainer.appendChild(document.createElement("br"));
+
         const material = document.createElement("input");
-        material.id = "albedo";
+        material.id = "material";
         material.type = "checkbox";
         material.checked = this._renderer.diffuseLighting;
         material.addEventListener("input", (e) => {
@@ -112,6 +114,7 @@ export class UserInterface
 
         layersContainer.appendChild(material);
         layersContainer.appendChild(materialLabel);
+        layersContainer.appendChild(document.createElement("br"));
 
         const shadowsInput = document.createElement("input");
         shadowsInput.id = "shadows";
@@ -127,6 +130,7 @@ export class UserInterface
 
         layersContainer.appendChild(shadowsInput);
         layersContainer.appendChild(shadowsLabel);
+        layersContainer.appendChild(document.createElement("br"));
 
         const reflectionsInput = document.createElement("input");
         reflectionsInput.id = "reflections";
@@ -142,6 +146,7 @@ export class UserInterface
 
         layersContainer.appendChild(reflectionsInput);
         layersContainer.appendChild(reflectionsLabel);
+        layersContainer.appendChild(document.createElement("br"));
         
         const aoInput = document.createElement("input");
         aoInput.id = "ao";
@@ -157,6 +162,7 @@ export class UserInterface
 
         layersContainer.appendChild(aoInput);
         layersContainer.appendChild(aoLabel);
+        layersContainer.appendChild(document.createElement("br"));
         
         this._dom.appendChild(layersContainer);
     }
