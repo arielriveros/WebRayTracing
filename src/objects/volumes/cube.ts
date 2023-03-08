@@ -5,7 +5,6 @@ import Ray from "src/ray/ray";
 interface CubeParameters
 {
     position?: vec3,
-    rotation?: vec3,
     size?: number,
     color?: vec4
 }
@@ -16,9 +15,9 @@ export class Cube extends RenderObject
     private _min: vec3 = vec3.create();
     private _max: vec3 = vec3.create();
 
-    constructor({position = vec3.create(), rotation = vec3.create(), size = 1, color = vec4.fromValues(1, 1, 1, 1)}: CubeParameters)
+    constructor({position = vec3.create(), size = 1, color = vec4.fromValues(1, 1, 1, 1)}: CubeParameters)
     {
-        super(position, rotation, color, 'cube');
+        super(position, color, 'cube');
         this._size = size;
         
         this._min = this.calcMin();

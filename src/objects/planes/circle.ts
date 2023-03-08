@@ -5,7 +5,6 @@ import Ray from "src/ray/ray";
 interface CircleParameters
 {
     position?: vec3;
-    rotation?: vec3;
     color?: vec4;
     radius?: number;
 }
@@ -15,9 +14,9 @@ export class Circle extends RenderObject
     private _radius: number;
     private _normal: vec3;
 
-    constructor({position = vec3.create(), rotation = vec3.create(), color = vec4.fromValues(1, 1, 1, 1), radius = 1}: CircleParameters)
+    constructor({position = vec3.create(), color = vec4.fromValues(1, 1, 1, 1), radius = 1}: CircleParameters)
     {
-        super(position, rotation, color, 'plane');
+        super(position, color, 'circle');
         this._radius = radius;
         this._normal = vec3.fromValues(0, 0, 1);
     }
@@ -27,20 +26,17 @@ export class Circle extends RenderObject
 
     public override getIntersection(ray: Ray, intersection: RayIntersection): void
     {
-        const n = vec3.transformMat4(this._normal, vec3.fromValues(0, 0, 1), this.transform);
-        const p0 = vec3.transformMat4(vec3.create(), this.position, this.transform);
-    
-        const nd = vec3.dot(n, ray.direction);
+        const nd = vec3.dot(this._normal, ray.direction);
         if (Math.abs(nd) < 1e-6)
             return;
     
-        const t = vec3.dot(vec3.sub(vec3.create(), p0, ray.origin), n) / nd;
+        const t = vec3.dot(vec3.sub(vec3.create(), this.position, ray.origin), this._normal) / nd;
     
         if (t < 0)
             return;
     
         const p = vec3.scaleAndAdd(vec3.create(), ray.origin, ray.direction, t);
-        const dist = vec2.length(vec2.sub(vec2.create(), vec2.fromValues(p[0], p[1]), vec2.fromValues(p0[0], p0[1])));
+        const dist = vec2.length(vec2.sub(vec2.create(), vec2.fromValues(p[0], p[1]), vec2.fromValues(this.position[0], this.position[1])));
     
         if (dist <= this.radius && (intersection.closestObject === null || t < intersection.hitDistance))
         {

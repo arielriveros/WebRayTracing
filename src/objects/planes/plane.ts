@@ -5,7 +5,6 @@ import Ray from "src/ray/ray";
 interface PlaneParameters
 {
     position?: vec3;
-    rotation?: vec3;
     color?: vec4;
     size?: number;
 }
@@ -21,9 +20,9 @@ export class Plane extends RenderObject
     private _tangent: vec3;
     private _bitangent: vec3;
 
-    constructor({position = vec3.create(), rotation = vec3.create(), color = vec4.fromValues(1, 1, 1, 1), size = 1}: PlaneParameters)
+    constructor({position = vec3.create(), color = vec4.fromValues(1, 1, 1, 1), size = 1}: PlaneParameters)
     {
-        super(position, rotation, color, 'plane');
+        super(position, color, 'plane');
         this._size = size;
         this._uMin = -size;
         this._uMax = size;
@@ -43,32 +42,24 @@ export class Plane extends RenderObject
         this._vMax = value;
     }
 
-    public get uMin(): number { return this._uMin; }
-    public get uMax(): number { return this._uMax; }
-    public get vMin(): number { return this._vMin; }
-    public get vMax(): number { return this._vMax; }
-    public get normal(): vec3 { return this._normal; }
-    public get tangent(): vec3 { return this._tangent; }
-    public get bitangent(): vec3 { return this._bitangent; }
-
     public override getIntersection(ray: Ray, intersection: RayIntersection): void
     {
         let closestDistance: number = Number.MAX_VALUE;
         let origin = vec3.sub(vec3.create(), ray.origin, this.position);
 
-        let denom: number = vec3.dot(this.normal, ray.direction);
+        let denom: number = vec3.dot(this._normal, ray.direction);
         if(denom > 0.0001)
         {
             let p0l0: vec3 = vec3.create();
             vec3.sub(p0l0, this.position, origin);
-            closestDistance = vec3.dot(p0l0, this.normal) / denom;
+            closestDistance = vec3.dot(p0l0, this._normal) / denom;
             if(closestDistance < intersection.hitDistance)
             {
                 let hitPoint: vec3 = vec3.create();
                 vec3.scaleAndAdd(hitPoint, origin, ray.direction, closestDistance);
-                let u: number = vec3.dot(hitPoint, this.tangent);
-                let v: number = vec3.dot(hitPoint, this.bitangent);
-                if(u >= this.uMin && u <= this.uMax && v >= this.vMin && v <= this.vMax)
+                let u: number = vec3.dot(hitPoint, this._tangent);
+                let v: number = vec3.dot(hitPoint, this._bitangent);
+                if(u >= this._uMin && u <= this._uMax && v >= this._vMin && v <= this._vMax)
                 {
                     intersection.hitDistance = closestDistance;
                     intersection.closestObject = this;
