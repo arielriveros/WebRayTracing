@@ -56,11 +56,12 @@ export default class Input
             this._app.camera.moveForward(-e.deltaY / 500);
         });
 
-        // WASD movement for selected object
+        // Keyboard Inputs
         document.addEventListener("keydown", (e) => {
             if(!this._selectedObject) return;
             switch(e.key)
             {
+                // WASDQE
                 case "w":
                     this._selectedObject.position[1] -= 0.1;
                     break;
@@ -79,6 +80,11 @@ export default class Input
                 case "e":
                     this._selectedObject.position[2] -= 0.1;
                     break;
+
+                // DELETE
+                case "Delete":
+                    let index = this._app.scene.objects.indexOf(this._selectedObject);
+                    this._app.scene.removeObject(index);
             }
         });
     }
