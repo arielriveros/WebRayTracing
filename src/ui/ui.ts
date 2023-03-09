@@ -164,20 +164,20 @@ export class UserInterface
         layersContainer.appendChild(aoLabel);
         layersContainer.appendChild(document.createElement("br"));
 
-        const acctumulation = document.createElement("input");
-        acctumulation.id = "acctumulation";
-        acctumulation.type = "checkbox";
-        acctumulation.checked = this._renderer.accumulate;
-        acctumulation.addEventListener("input", (e) => {
+        const accumulation = document.createElement("input");
+        accumulation.id = "acctumulation";
+        accumulation.type = "checkbox";
+        accumulation.checked = this._renderer.accumulate;
+        accumulation.addEventListener("input", (e) => {
             this._renderer.accumulate = (e.target as HTMLInputElement).checked;
         });
 
-        const acctumulationLabel = document.createElement("label");
-        acctumulationLabel.htmlFor = "acctumulation";
-        acctumulationLabel.innerText = "Accumulation";
+        const accumulationLabel = document.createElement("label");
+        accumulationLabel.htmlFor = "acctumulation";
+        accumulationLabel.innerText = "Accumulation";
 
-        layersContainer.appendChild(acctumulation);
-        layersContainer.appendChild(acctumulationLabel);
+        layersContainer.appendChild(accumulation);
+        layersContainer.appendChild(accumulationLabel);
         layersContainer.appendChild(document.createElement("br"));
 
         const resetAccumulation = document.createElement("button");
@@ -238,6 +238,7 @@ export class UserInterface
         maxBouncesInput.value = this._renderer.bounceLimit.toString();
         maxBouncesInput.addEventListener("input", (e) => {
             this._renderer.bounceLimit = (e.target as HTMLInputElement).valueAsNumber;
+            this._renderer.resetFrameIndex();
         });
 
         maxBouncesContainer.appendChild(maxBouncesInput);
@@ -265,6 +266,7 @@ export class UserInterface
         shadowBiasInput.value = this._renderer.shadowBias.toString();
         shadowBiasInput.addEventListener("input", (e) => {
             this._renderer.shadowBias = (e.target as HTMLInputElement).valueAsNumber;
+            this._renderer.resetFrameIndex();
         });
 
         shadowBiasContainer.appendChild(shadowBiasInput);
@@ -295,6 +297,7 @@ export class UserInterface
         lightDirXRotation.value = this._scene.directionalLight.theta.toString();
         lightDirXRotation.addEventListener("input", (e) => {
             this._scene.directionalLight.phi = (e.target as HTMLInputElement).valueAsNumber * Math.PI / 180;
+            this._renderer.resetFrameIndex();
         });
 
 
@@ -306,6 +309,7 @@ export class UserInterface
         lightDirYRotation.value = this._scene.directionalLight.theta.toString();
         lightDirYRotation.addEventListener("input", (e) => {
             this._scene.directionalLight.theta = (e.target as HTMLInputElement).valueAsNumber * Math.PI / 180;
+            this._renderer.resetFrameIndex();
         });
 
         lightDirContainer.appendChild(lightDirXRotation);
@@ -342,6 +346,7 @@ export class UserInterface
         bgColorR.style.width = "100%";
         bgColorR.addEventListener("input", (e) => {
             this._scene.backgroundColor = hexToVec4((e.target as HTMLInputElement).value);
+            this._renderer.resetFrameIndex();
         });
 
         bgColorContainer.appendChild(bgColorR);
@@ -358,6 +363,7 @@ export class UserInterface
         addSphereButton.innerText = "Add Sphere";
         addSphereButton.addEventListener("click", () => {
             this._scene.addObject(new OBJECTS.Sphere({radius: 0.25}));
+            this._renderer.resetFrameIndex();
         });
 
         objectsContainer.appendChild(addSphereButton);
@@ -366,6 +372,7 @@ export class UserInterface
         addCubeButton.innerText = "Add Cube";
         addCubeButton.addEventListener("click", () => {
             this._scene.addObject(new OBJECTS.Cube({size: 0.25}));
+            this._renderer.resetFrameIndex();
         });
 
         objectsContainer.appendChild(addCubeButton);
@@ -374,6 +381,7 @@ export class UserInterface
         addPlaneButton.innerText = "Add Plane";
         addPlaneButton.addEventListener("click", () => {
             this._scene.addObject(new OBJECTS.Plane({size: 0.5}));
+            this._renderer.resetFrameIndex();
         });
 
         objectsContainer.appendChild(addPlaneButton);
@@ -382,6 +390,7 @@ export class UserInterface
         addCircleButton.innerText = "Add Circle";
         addCircleButton.addEventListener("click", () => {
             this._scene.addObject(new OBJECTS.Circle({radius: 0.5}));
+            this._renderer.resetFrameIndex();
         });
 
         objectsContainer.appendChild(addCircleButton);
@@ -413,6 +422,7 @@ export class UserInterface
         sphereRadius.style.width = "100%";
         sphereRadius.addEventListener("input", (e) => {
             (this._scene.objects[index] as OBJECTS.Sphere).radius = parseFloat((e.target as HTMLInputElement).value);
+            this._renderer.resetFrameIndex();
         });
 
         const sphereRadiusLabel = document.createElement("label");
@@ -456,6 +466,7 @@ export class UserInterface
         cubeSize.style.width = "100%";
         cubeSize.addEventListener("input", (e) => {
             (this._scene.objects[index] as OBJECTS.Cube).size = parseFloat((e.target as HTMLInputElement).value);
+            this._renderer.resetFrameIndex();
         });
 
         const cubeSizeLabel = document.createElement("label");
@@ -499,6 +510,7 @@ export class UserInterface
         planeSize.style.width = "100%";
         planeSize.addEventListener("input", (e) => {
             (this._scene.objects[index] as OBJECTS.Plane).size = parseFloat((e.target as HTMLInputElement).value);
+            this._renderer.resetFrameIndex();
         });
         
         const planeSizeLabel = document.createElement("label");
@@ -542,6 +554,7 @@ export class UserInterface
         circleRadius.style.width = "100%";
         circleRadius.addEventListener("input", (e) => {
             (this._scene.objects[index] as OBJECTS.Circle).radius = parseFloat((e.target as HTMLInputElement).value);
+            this._renderer.resetFrameIndex();
         });
 
         const circleRadiusLabel = document.createElement("label");
@@ -580,6 +593,7 @@ export class UserInterface
         materialColor.style.width = "100%";
         materialColor.addEventListener("input", (e) => {
             this._scene.objects[index].material.baseColor = hexToVec4((e.target as HTMLInputElement).value);
+            this._renderer.resetFrameIndex();
         });
 
         const materialColorLabel = document.createElement("label");
@@ -600,6 +614,7 @@ export class UserInterface
         materialRoughness.style.width = "100%";
         materialRoughness.addEventListener("input", (e) => {
             this._scene.objects[index].material.roughness = parseFloat((e.target as HTMLInputElement).value);
+            this._renderer.resetFrameIndex();
         });
 
         const materialRoughnessLabel = document.createElement("label");
@@ -620,6 +635,7 @@ export class UserInterface
         materialMetallic.style.width = "100%";
         materialMetallic.addEventListener("input", (e) => {
             this._scene.objects[index].material.metallic = parseFloat((e.target as HTMLInputElement).value);
+            this._renderer.resetFrameIndex();
         });
 
         const materialMetallicLabel = document.createElement("label");

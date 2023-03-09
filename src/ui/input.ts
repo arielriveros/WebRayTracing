@@ -63,6 +63,7 @@ export default class Input
         // Keyboard Inputs
         document.addEventListener("keydown", (e) => {
             if(!this._selectedObject) return;
+            this._app.renderer.resetFrameIndex();
             switch(e.key)
             {
                 // WASDQE
@@ -89,6 +90,7 @@ export default class Input
                 case "Delete":
                     let index = this._app.scene.objects.indexOf(this._selectedObject);
                     this._app.scene.removeObject(index);
+                    break;
             }
         });
     }

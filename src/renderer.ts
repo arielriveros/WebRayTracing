@@ -18,8 +18,8 @@ export default class Renderer
     private _scene!: Scene;
     private _camera!: Camera;
     
-    private _width: number = 640;
-    private _height: number = 480;
+    private _width: number = 480;
+    private _height: number = 360;
     
     private _bias: number = 1e-8;
     private _clearColor: vec4 = vec4.fromValues(0, 0, 0, 1);
@@ -31,7 +31,7 @@ export default class Renderer
     public shadowBias: number = 0.02;
     public updateInterval: number = 10;
 
-    public accumulate: boolean = true;
+    private _accumulate: boolean = true;
     public diffuseLighting: boolean = true;
     public directionalShadows: boolean = true;
     public reflections: boolean = true;
@@ -74,6 +74,7 @@ export default class Renderer
 
     public render(): void {
         this._lastUpdate++;
+        console.log(this._frameIndex)
         if(this._lastUpdate % this.updateInterval !== 0 && this.updateInterval !== 0)
             return;
 
@@ -105,29 +106,20 @@ export default class Renderer
                 let color: vec4 = this.rayGen(x, y);
                 vec4.add(this._accumulationBuffer[x + y * this._renderTarget.width], this._accumulationBuffer[x + y * this._renderTarget.width], color)
                 
-                if(this.accumulate && 1/this._frameIndex > 0.1)
-                {
-                    let accumulatedColor: vec4 = vec4.clone(this._accumulationBuffer[x + y * this._renderTarget.width]) ;
-                    vec4.scale(accumulatedColor, accumulatedColor, 1 / this._frameIndex);
+                let accumulatedColor: vec4 = vec4.clone(this._accumulationBuffer[x + y * this._renderTarget.width]) ;
 
-                    //clamp accumulatedColor
-                    vec4.min(accumulatedColor, accumulatedColor, vec4.fromValues(1, 1, 1, 1));
-                    vec4.max(accumulatedColor, accumulatedColor, vec4.create());
+                if(this.accumulate)
+                    vec4.scale(accumulatedColor, accumulatedColor, 1 / this._frameIndex);                
 
-                    let index = (x + y * this._renderTarget.width) * 4;
-                    this._rgbBuffer[index]     = accumulatedColor[0] * 255;
-                    this._rgbBuffer[index + 1] = accumulatedColor[1] * 255;
-                    this._rgbBuffer[index + 2] = accumulatedColor[2] * 255;
-                    this._rgbBuffer[index + 3] = accumulatedColor[3] * 255;
-                }
-                else
-                {
-                    let index = (x + y * this._renderTarget.width) * 4;
-                    this._rgbBuffer[index]     = color[0] * 255;
-                    this._rgbBuffer[index + 1] = color[1] * 255;
-                    this._rgbBuffer[index + 2] = color[2] * 255;
-                    this._rgbBuffer[index + 3] = color[3] * 255;
-                }
+                //clamp accumulatedColor
+                vec4.min(accumulatedColor, accumulatedColor, vec4.fromValues(1, 1, 1, 1));
+                vec4.max(accumulatedColor, accumulatedColor, vec4.create());
+
+                let index = (x + y * this._renderTarget.width) * 4;
+                this._rgbBuffer[index]     = accumulatedColor[0] * 255;
+                this._rgbBuffer[index + 1] = accumulatedColor[1] * 255;
+                this._rgbBuffer[index + 2] = accumulatedColor[2] * 255;
+                this._rgbBuffer[index + 3] = accumulatedColor[3] * 255;
             }
         }
         this.uploadBuffer();
@@ -340,4 +332,6 @@ export default class Renderer
         this._bounceLimit = value; 
     }
 
+    public get accumulate(): boolean { return this._accumulate; }
+    public set accumulate(value: boolean) { this._accumulate = value; this.resetFrameIndex(); }
 }
