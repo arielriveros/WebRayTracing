@@ -74,7 +74,6 @@ export default class Renderer
 
     public render(): void {
         this._lastUpdate++;
-        console.log(this._frameIndex)
         if(this._lastUpdate % this.updateInterval !== 0 && this.updateInterval !== 0)
             return;
 

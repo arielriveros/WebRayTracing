@@ -28,10 +28,19 @@ export class UserInterface
         uiContainer.style.left = appContainer.offsetWidth + "px";
         uiContainer.style.width = "150px";
         uiContainer.style.zIndex = "100";
+        uiContainer.style.display = "none";
 
 
         this._dom = uiContainer;
         this._appContainer.appendChild(uiContainer);
+    }
+
+    public toggle(): void
+    {
+        if(this._dom.style.display === "none")
+            this._dom.style.display = "block";
+        else
+            this._dom.style.display = "none";
     }
 
     public start(renderer: Renderer): void

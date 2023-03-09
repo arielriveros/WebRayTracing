@@ -1,4 +1,4 @@
-import { vec3 } from "gl-matrix";
+import { vec3, vec4 } from "gl-matrix";
 import Camera from "./scene/camera";
 import Renderer from "./renderer";
 import Scene from "./scene/scene";
@@ -8,6 +8,7 @@ import { UserInterface } from "./ui/ui";
 import * as OBJECTS from "./objects/objects";
 import Input from "./ui/input";
 import Material from "./objects/material";
+import SettingsButton from "./ui/settingsButton";
 
 export class Application
 {
@@ -36,7 +37,7 @@ export class Application
         this._camera.rotateY(-0.33);
         this._scene = new Scene({
             lightDir: vec3.fromValues(0.35, 0.76, 0.5),
-            backgroundColor: COLORS.BLUE,
+            backgroundColor: vec4.fromValues(Math.random(), Math.random(), Math.random(), 1),
         });
 
         this._ui = new UserInterface(this._appContainer);
@@ -46,13 +47,16 @@ export class Application
         this._stats.dom.style.zIndex = "100";
         document.getElementById("raytracer")?.appendChild(this._stats.dom);
         
+        let optionButton = new SettingsButton(this._ui).dom;
+        document.getElementById("raytracer")?.appendChild(optionButton);
+
         // Add a sphere
         this._scene.addObject(
             new OBJECTS.Sphere({
                 position: vec3.fromValues(0.5, -1, -1),
                 radius: 0.5,
                 material: new Material({
-                    baseColor: COLORS.RED,
+                    baseColor: vec4.fromValues(Math.random(), Math.random(), Math.random(), 1),
                     roughness: Math.random(),
                     metallic: Math.random()
                 })
@@ -65,7 +69,7 @@ export class Application
                 position: vec3.fromValues(-0.55, -0.28, 0),
                 size: 0.5,
                 material: new Material({
-                    baseColor: COLORS.GREEN,
+                    baseColor: vec4.fromValues(Math.random(), Math.random(), Math.random(), 1),
                     roughness: Math.random(),
                     metallic: Math.random()
                 })
@@ -77,7 +81,7 @@ export class Application
             new OBJECTS.Plane({
                 size: 4,
                 material: new Material({
-                    baseColor: COLORS.YELLOW,
+                    baseColor: vec4.fromValues(Math.random(), Math.random(), Math.random(), 1),
                     roughness: Math.random(),
                     metallic: Math.random()
                 })
